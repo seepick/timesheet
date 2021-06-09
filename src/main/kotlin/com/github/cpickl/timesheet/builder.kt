@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-fun timesheet(initCode: TimeSheetInitDsl.() -> Unit, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
+fun timesheet(initCode: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
     val dsl = DslImplementation()
     dsl.initCode()
     dsl.entryCode()
@@ -12,11 +12,11 @@ fun timesheet(initCode: TimeSheetInitDsl.() -> Unit, entryCode: TimeSheetDsl.() 
 }
 
 interface TimeSheetInitDsl {
-    var start: String
-    var weekHoursTarget: Int
+    var daysOff: MutableSet<WorkDay>
 }
 
-private val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.YY")
+private val DATE_FORMAT = DateTimeFormatter.ofPattern("d.M.yy")
+
 private fun String.parseDate() = LocalDate.parse(this, DATE_FORMAT)
 
 private fun String.parseTime(): Pair<LocalTime, LocalTime> {
@@ -34,16 +34,8 @@ private fun parseTimePart(part: String) = if (part.contains(":")) {
 
 class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, PostAboutDsl {
 
-    override var start: String = "1.1.20"
-        get() = field
-        set(value) {
-            startDate = start.parseDate()
-            field = value
-        }
+    override var daysOff = mutableSetOf<WorkDay>()
 
-    override var weekHoursTarget = 40
-
-    private var startDate: LocalDate = start.parseDate()
     private val entries = mutableListOf<IntermediateEntry>()
     private lateinit var currentDay: LocalDate
     private lateinit var currentEntry: IntermediateEntry
@@ -76,13 +68,10 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
         entry.reason = reason
     }
 
-    fun build(): TimeSheet {
-        return TimeSheet(
-            start = start.parseDate(),
-            weekHoursTarget = weekHoursTarget,
-            entries = entries.map { it.toRealEntry() }
-        )
-    }
+    fun build() = TimeSheet(
+        daysOff = daysOff,
+        entries = TimeEntries(entries.map { it.toRealEntry() })
+    )
 
     private fun IntermediateEntry.toRealEntry(): TimeEntry {
         return when (this) {

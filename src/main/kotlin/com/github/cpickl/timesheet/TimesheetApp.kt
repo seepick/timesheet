@@ -6,10 +6,7 @@ object TimesheetApp {
         println("timesheet app running ...")
         val finder = ClasspathTimesheetFinder("com.github.cpickl.timesheet.MyTimeSheet")
         val sheet = finder.find()
-        process(sheet)
-    }
-
-    fun process(sheet: TimeSheet) {
-
+        val report = TimeCalculator().foo(sheet)
+        println(report)
     }
 }
