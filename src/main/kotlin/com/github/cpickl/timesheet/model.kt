@@ -30,13 +30,17 @@ data class TimeSheet(
 data class TimeEntries(
     private val entries: List<TimeEntry>,
 ) {
-    val firstDate: LocalDate = (entries.first() as WorkTimeEntry).hours.day
-    val workEntries = entries.filterIsInstance<WorkTimeEntry>()
+    init {
+        require(entries.first() is WorkDayEntry)
+    }
+
+    val firstDate: LocalDate = (entries.first() as WorkDayEntry).hours.day
+    val workEntries = entries.filterIsInstance<WorkDayEntry>()
 }
 
 sealed class TimeEntry
 
-data class WorkTimeEntry(
+data class WorkDayEntry(
     val hours: EntryDateRange,
     val description: String,
     val tag: Tag,
@@ -48,9 +52,10 @@ data class WorkTimeEntry(
 
 enum class Tag {
     None,
-    Organization,
-    Meeting,
+    Business,
     Coding,
+    Meeting,
+    Organization,
     Education,
 }
 
@@ -69,7 +74,7 @@ data class TimeRange(
 }
 
 
-data class OffTimeEntry(
+data class DayOffEntry(
     val day: LocalDate,
     val tag: OffTag,
 ) : TimeEntry()

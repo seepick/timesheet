@@ -11,6 +11,8 @@ fun timesheet(initCode: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDs
     return dsl.build()
 }
 
+class InvalidTimesheetModelException(message: String) : Exception(message)
+
 interface TimeSheetInitDsl {
     var daysOff: MutableSet<WorkDay>
 }
@@ -53,13 +55,13 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
     }
 
     override infix fun String.about(description: String): PostAboutDsl {
-        currentEntry = IntermediateDayEntry(currentDay, this.parseTime(), description)
+        currentEntry = IntermediateWorkDayEntry(currentDay, this.parseTime(), description)
         entries += currentEntry
         return this@DslImplementation
     }
 
     override fun tag(tag: IntermediateTag) {
-        val entry = currentEntry as IntermediateDayEntry
+        val entry = currentEntry as IntermediateWorkDayEntry
         entry.tag = tag
     }
 
@@ -68,14 +70,22 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
         entry.reason = reason
     }
 
-    fun build() = TimeSheet(
-        daysOff = daysOff,
-        entries = TimeEntries(entries.map { it.toRealEntry() })
-    )
+    fun build(): TimeSheet {
+        validate()
+        return TimeSheet(
+            daysOff = daysOff,
+            entries = TimeEntries(entries.map { it.toRealEntry() })
+        )
+    }
+
+    private fun validate() {
+        if (entries.isEmpty()) throw InvalidTimesheetModelException("No entries given")
+        if (entries.first() !is IntermediateWorkDayEntry) throw InvalidTimesheetModelException("First entry must be a work day")
+    }
 
     private fun IntermediateEntry.toRealEntry(): TimeEntry {
         return when (this) {
-            is IntermediateDayEntry -> WorkTimeEntry(
+            is IntermediateWorkDayEntry -> WorkDayEntry(
                 hours = EntryDateRange(
                     day = currentDay,
                     range = TimeRange(
@@ -86,9 +96,10 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
                 description = description,
                 tag = tag.realTag,
             )
-            is IntermediateDayOffEntry -> OffTimeEntry(
+            is IntermediateDayOffEntry -> DayOffEntry(
                 day = currentDay,
-                tag = this.reason.realTag
+                tag = this.reason?.realTag
+                    ?: throw InvalidTimesheetModelException("no day off reason was given for: $this")
             )
         }
     }
@@ -96,7 +107,7 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
 
 private sealed class IntermediateEntry
 
-private data class IntermediateDayEntry(
+private data class IntermediateWorkDayEntry(
     val day: LocalDate,
     val timeRange: Pair<LocalTime, LocalTime>,
     val description: String,
@@ -107,7 +118,7 @@ private data class IntermediateDayEntry(
 private data class IntermediateDayOffEntry(
     val day: LocalDate,
 ) : IntermediateEntry() {
-    lateinit var reason: DayOffReason
+    var reason: DayOffReason? = null
 }
 
 interface TimeSheetDsl {
@@ -119,10 +130,14 @@ interface TimeSheetDsl {
 
 enum class IntermediateTag(val realTag: Tag) {
     None(Tag.None),
+    Biz(Tag.Business),
     Orga(Tag.Organization),
     Meet(Tag.Meeting),
     Code(Tag.Coding),
     Edu(Tag.Education),
+    ;
+
+    companion object
 }
 
 interface DayOffDsl {
@@ -132,6 +147,8 @@ enum class DayOffReason(val realTag: OffTag) {
     Sickness(OffTag.Sick),
     PublicHoliday(OffTag.PublicHoliday),
     Vacation(OffTag.Vacation);
+
+    companion object
 }
 
 interface DayDsl {
