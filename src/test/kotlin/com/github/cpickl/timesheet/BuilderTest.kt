@@ -29,21 +29,23 @@ class BuilderTest : StringSpec() {
             }
         }
         "When build work day Then parse properly" {
+            val date = LocalDate.of(2003, 2, 1)
+            val timeStart = LocalTime.of(9, 30)
+            val timeEnd = LocalTime.of(10, 0)
+            val description = "intro meeting"
+
             val sheet = timesheet {
-                day("1.2.03") {
-                    "9-10" about "intro meeting" tag (IntermediateTag.Meet)
+                day("${date.dayOfMonth}.${date.monthValue}.${date.year}") {
+                    "9:30-10" about description tag (IntermediateTag.meet)
                 }
             }
 
-            sheet.startDate shouldBe LocalDate.of(2003, 2, 1)
+            sheet.startDate shouldBe date
             sheet.entries shouldBe TimeEntries(
                 listOf(
                     WorkDayEntry(
-                        hours = EntryDateRange(
-                            LocalDate.of(2003, 2, 1),
-                            TimeRange(LocalTime.of(9, 0), LocalTime.of(10, 0))
-                        ),
-                        description = "intro meeting",
+                        hours = EntryDateRange(date, TimeRange(timeStart, timeEnd)),
+                        description = description,
                         tag = Tag.Meeting,
                     )
                 )

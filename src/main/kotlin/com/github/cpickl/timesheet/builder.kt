@@ -60,10 +60,14 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
         return this@DslImplementation
     }
 
+    override operator fun String.minus(description: String) = about(description)
+
     override fun tag(tag: IntermediateTag) {
         val entry = currentEntry as IntermediateWorkDayEntry
         entry.tag = tag
     }
+
+    override operator fun minus(tag: IntermediateTag) = tag(tag)
 
     override fun DayOffDsl.becauseOf(reason: DayOffReason) {
         val entry = currentEntry as IntermediateDayOffEntry
@@ -112,7 +116,7 @@ private data class IntermediateWorkDayEntry(
     val timeRange: Pair<LocalTime, LocalTime>,
     val description: String,
 ) : IntermediateEntry() {
-    var tag: IntermediateTag = IntermediateTag.None
+    var tag: IntermediateTag = IntermediateTag.none
 }
 
 private data class IntermediateDayOffEntry(
@@ -129,12 +133,12 @@ interface TimeSheetDsl {
 }
 
 enum class IntermediateTag(val realTag: Tag) {
-    None(Tag.None),
-    Biz(Tag.Business),
-    Orga(Tag.Organization),
-    Meet(Tag.Meeting),
-    Code(Tag.Coding),
-    Edu(Tag.Education),
+    none(Tag.None),
+    biz(Tag.Business),
+    orga(Tag.Organization),
+    meet(Tag.Meeting),
+    code(Tag.Coding),
+    edu(Tag.Education),
     ;
 
     companion object
@@ -153,9 +157,11 @@ enum class DayOffReason(val realTag: OffTag) {
 
 interface DayDsl {
     infix fun String.about(description: String): PostAboutDsl
+    operator fun String.minus(description: String): PostAboutDsl
 
 }
 
 interface PostAboutDsl {
     infix fun tag(tag: IntermediateTag)
+    operator fun minus(tag: IntermediateTag)
 }
