@@ -21,16 +21,38 @@ private fun DayDsl.standup() {
 }
 ```
 
+## Setup
+
+1. checkout the code
+1. create a file `src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheet.kt`
+1. add file content:
+
+```kotlin
+package com.github.cpickl.timesheet
+
+import com.github.cpickl.timesheet.IntermediateTag.biz
+
+class MyTimeSheet : TimeSheetProvider {
+    override fun provide() = timesheet {
+        day("1.6.21") {
+            "9-5" - "regular shit" - biz
+        }
+    }
+}
+```
+
+4. run the main application `TimesheetApp`
+
 # TODO
 
+* [x] test working on day off/weekend/holiday
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
 * [ ] check+test for time overlap
-* [ ] support `day("Tue 10.6.21")`
-* [ ] support `year("2021") { month("June") { day("Tue 10." | "10." | "10" ) { ... } } }`
-* [ ] test working on day off/weekend/holiday
+* [ ] support simplified syntax: `year("2021") { month("June") { day("Tue 10." | "10." | "10" ) { ... } } }`
+* [ ] colorized output
+* [ ] detailed output (first print balance, then peer week each balance/total balance so far)
 
 ## Outlook
 
-* [ ] colored output
 * [ ] overview categories time spent (pie chart)
 * [ ] different Processors (text, excel)

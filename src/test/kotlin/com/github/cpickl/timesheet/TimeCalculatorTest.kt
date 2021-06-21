@@ -1,27 +1,80 @@
 package com.github.cpickl.timesheet
 
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import java.time.LocalDate
 
 class TimeCalculatorTest : StringSpec() {
-    init {
-        val clock = mockk<Clock>()
-        val now = LocalDate.of(2021, 6, 1)
-        every { clock.currentLocalDate() } returns now
-        val calc = TimeCalculator(clock)
 
-        "foo" {
-            val sheet = timesheet {
+    private val minutesInHour = 60L
+    private val workHoursPerDay = 8L
+    private val workMinutesPerDay = workHoursPerDay * minutesInHour
+
+    init {
+        "single complete work day" {
+            val report = calculate("1.6.21") {
+                fullDay("1.6.21")
+            }
+
+            report shouldBe TimeReport(
+                totalMinutesToWork = (8 * minutesInHour),
+                totalMinutesWorked = (8 * minutesInHour),
+            )
+            report.balance shouldBe 0
+        }
+
+        "single incomplete work day" {
+            val report = calculate("1.6.21") {
                 day("1.6.21") {
                     "10-16" about "any"
                 }
             }
 
-            val report = calc.foo(sheet)
-            println(report)
+            report shouldBe TimeReport(
+                totalMinutesToWork = (8 * minutesInHour),
+                totalMinutesWorked = (6 * minutesInHour),
+            )
+            report.balance shouldBe (-2 * minutesInHour)
         }
 
+        "filter weekend" {
+            val report = calculate("5.6.21") {
+                fullDay("4.6.21")
+            }
+
+            report.totalMinutesToWork shouldBe workMinutesPerDay
+        }
+
+        "filter free day" {
+            val report = calculate("2.6.21", { freeDays += WorkDay.Wednesday }) {
+                fullDay("1.6.21")
+            }
+
+            report.totalMinutesToWork shouldBe workMinutesPerDay
+        }
+
+        "filter day off" {
+            val report = calculate("2.6.21") {
+                fullDay("1.6.21")
+                someDayOff("2.6.21")
+            }
+
+            report shouldBe TimeReport(
+                totalMinutesToWork = (8 * minutesInHour),
+                totalMinutesWorked = (8 * minutesInHour),
+            )
+            report.balance shouldBe 0
+        }
+    }
+
+    private fun calculate(today: String, initCode: TimeSheetInitDsl.() -> Unit = {}, sheet: TimeSheetDsl.() -> Unit) =
+        TimeCalculator(clockReturning(today))
+            .calculate(timesheet(initCode = initCode, entryCode = sheet))
+
+    private fun clockReturning(date: String): Clock {
+        val clock = mockk<Clock>()
+        every { clock.currentLocalDate() } returns date.parseDate()
+        return clock
     }
 }

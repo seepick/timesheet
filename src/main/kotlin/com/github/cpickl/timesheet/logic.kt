@@ -4,6 +4,7 @@ import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.abs
 
 fun interface TimeSheetProvider {
     fun provide(): TimeSheet
@@ -23,32 +24,34 @@ class TimeCalculator(
     private val clock: Clock = SystemClock
 ) {
     private val minutesInHour = 60
-    fun foo(sheet: TimeSheet): TimeReport {
+
+    fun calculate(sheet: TimeSheet): TimeReport {
         val daysTotal = ChronoUnit.DAYS.between(sheet.startDate, clock.currentLocalDate())
-        println("daysTotal: $daysTotal")
-        val daysToWork = 0.rangeTo(daysTotal).map { sheet.startDate.plusDays(it) }
-            .filter { it.dayOfWeek.isWeekDay && !sheet.daysOffContains(it.dayOfWeek) }.count()
-        println("daysToWork: $daysToWork")
-        val totalMinutesToWork = daysToWork * sheet.hoursToWorkPerDay * minutesInHour
-        println("totalMinutesToWork: $totalMinutesToWork")
+        val daysToWork = 0.rangeTo(daysTotal)
+            .map { sheet.startDate.plusDays(it) }
+            .filter { it.dayOfWeek.isWeekDay && !sheet.freeDaysContains(it.dayOfWeek) }
+            .count() - sheet.entries.dayOffEntries.count()
+        val totalMinutesToWork = (daysToWork * sheet.hoursToWorkPerDay * minutesInHour).toLong()
         val totalMinutesWorked = sheet.entries.workEntries.sumOf { it.duration }
-        println("totalMinutesWorked: $totalMinutesWorked")
-        val balance: Minutes = totalMinutesWorked - totalMinutesToWork
+
         return TimeReport(
-            sheet = sheet,
-            balance = balance,
+            totalMinutesToWork = totalMinutesToWork,
+            totalMinutesWorked = totalMinutesWorked,
         )
     }
 }
 
 data class TimeReport(
-    val sheet: TimeSheet,
-    val balance: Minutes,
+    val totalMinutesToWork: Minutes,
+    val totalMinutesWorked: Minutes,
 ) {
     private val hoursFormatter = DecimalFormat("##.#")
 
-    val hoursBalance: Double = balance.toDouble() / 60.0
-    val hoursBalanceFormatted = hoursFormatter.format(hoursBalance)
+    val balance: Minutes = totalMinutesWorked - totalMinutesToWork
+    private val hoursBalance: Double = balance.toDouble() / 60.0
+    private val hoursBalanceFormatted = hoursFormatter.format(hoursBalance)
+    private val absHoursBalanceFormatted = hoursFormatter.format(abs(hoursBalance))
+
     val hoursBalanceString =
-        if (balance < 0.0) "need to work $hoursBalanceFormatted more hours" else "you have surplus of $hoursBalanceFormatted hours"
+        if (balance < 0.0) "need to work [$absHoursBalanceFormatted] more hours" else "surplus of [$hoursBalanceFormatted] hours"
 }

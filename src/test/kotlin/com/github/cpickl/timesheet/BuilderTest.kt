@@ -28,6 +28,7 @@ class BuilderTest : StringSpec() {
                 }
             }
         }
+        // TODO build day without about
         "When build work day Then parse properly" {
             val date = LocalDate.of(2003, 2, 1)
             val timeStart = LocalTime.of(9, 30)
@@ -51,15 +52,5 @@ class BuilderTest : StringSpec() {
                 )
             )
         }
-    }
-}
-
-private fun TimeSheetDsl.someDayOff() {
-    dayOff("1.1.00") becauseOf DayOffReason.any
-}
-
-private fun TimeSheetDsl.someWorkingDay() {
-    day("1.2.03") {
-        "9-10" about "some" tag (IntermediateTag.any)
     }
 }

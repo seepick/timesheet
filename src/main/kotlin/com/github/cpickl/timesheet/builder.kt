@@ -14,7 +14,7 @@ fun timesheet(initCode: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDs
 class InvalidTimesheetModelException(message: String) : Exception(message)
 
 interface TimeSheetInitDsl {
-    var daysOff: MutableSet<WorkDay>
+    var freeDays: MutableSet<WorkDay>
 }
 
 private val DATE_FORMAT = DateTimeFormatter.ofPattern("d.M.yy")
@@ -36,7 +36,7 @@ private fun parseTimePart(part: String) = if (part.contains(":")) {
 
 class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, PostAboutDsl {
 
-    override var daysOff = mutableSetOf<WorkDay>()
+    override var freeDays = mutableSetOf<WorkDay>()
 
     private val entries = mutableListOf<IntermediateEntry>()
     private lateinit var currentDay: LocalDate
@@ -77,7 +77,7 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
     fun build(): TimeSheet {
         validate()
         return TimeSheet(
-            daysOff = daysOff,
+            freeDays = freeDays,
             entries = TimeEntries(entries.map { it.toRealEntry() })
         )
     }
@@ -91,7 +91,7 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
         return when (this) {
             is IntermediateWorkDayEntry -> WorkDayEntry(
                 hours = EntryDateRange(
-                    day = currentDay,
+                    day = day,
                     range = TimeRange(
                         start = timeRange.first,
                         end = timeRange.second,
@@ -101,8 +101,8 @@ class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOffDsl, Pos
                 tag = tag.realTag,
             )
             is IntermediateDayOffEntry -> DayOffEntry(
-                day = currentDay,
-                tag = this.reason?.realTag
+                day = day,
+                tag = reason?.realTag
                     ?: throw InvalidTimesheetModelException("no day off reason was given for: $this")
             )
         }
