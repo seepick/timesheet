@@ -46,6 +46,7 @@ class MyTimeSheet : TimeSheetProvider {
 # TODO
 
 * [x] test working on day off/weekend/holiday
+* [ ] use arrow for validation'n'stuff
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
 * [ ] check+test for time overlap
 * [ ] support simplified syntax: `year("2021") { month("June") { day("Tue 10." | "10." | "10" ) { ... } } }`
