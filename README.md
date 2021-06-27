@@ -46,12 +46,12 @@ class MyTimeSheet : TimeSheetProvider {
 # TODO
 
 * [x] test working on day off/weekend/holiday
-* [ ] use arrow for validation'n'stuff
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
-* [ ] check+test for time overlap
 * [ ] support simplified syntax: `year("2021") { month("June") { day("Tue 10." | "10." | "10" ) { ... } } }`
+* [ ] check+test for time overlap
 * [ ] colorized output
 * [ ] detailed output (first print balance, then peer week each balance/total balance so far)
+* [ ] use arrow for validation'n'stuff
 
 ## Outlook
 
