@@ -83,9 +83,8 @@ data class TimeRange(
     private val parseableString = "${start.toParseableString()}-${end.toParseableString()}"
 
     fun overlaps(other: TimeRange): Boolean {
-        println("$this <-> $other")
+        // MINOR can be improved
         return when {
-            // MINOR can be improved
             other.start == start && other.end == end -> true
             other.start.isAfter(start) && other.start.isBefore(end) -> true
             other.end.isAfter(start) && other.end.isBefore(end) -> true

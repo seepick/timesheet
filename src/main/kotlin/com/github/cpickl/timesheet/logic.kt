@@ -42,18 +42,3 @@ class TimeCalculator(
         )
     }
 }
-
-data class TimeReport(
-    val totalMinutesToWork: Minutes,
-    val totalMinutesWorked: Minutes,
-) {
-    private val hoursFormatter = DecimalFormat("##.#")
-
-    val balance: Minutes = totalMinutesWorked - totalMinutesToWork
-    private val hoursBalance: Double = balance.toDouble() / 60.0
-    private val hoursBalanceFormatted = hoursFormatter.format(hoursBalance)
-    private val absHoursBalanceFormatted = hoursFormatter.format(abs(hoursBalance))
-
-    val hoursBalanceString =
-        if (balance < 0.0) "need to work [$absHoursBalanceFormatted] more hours" else "surplus of [$hoursBalanceFormatted] hours"
-}

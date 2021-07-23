@@ -46,11 +46,11 @@ class MyTimeSheet : TimeSheetProvider {
 # TODO
 
 * [ ] customizable tags
-* [ ] colorized output
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
 * [ ] support simplified syntax: `year("2021") { month("June") { day("Tue 10." | "10." | "10" ) { ... } } }`
 * [ ] use arrow's either for builder validation
 * [ ] detailed output (first print balance, then peer week each balance/total balance so far)
+* [ ] auto push messages (every day; via notification popup; create assembly and run in background; some evaluate kt file (dynamically load intellij's generated class file?! ;))
 
 ## Outlook
 
