@@ -20,7 +20,7 @@ internal data class IntermediateWorkDayEntryDso(
     val about: String,
 ) : IntermediateEntryDso() {
     init {
-        if(about.isBlank()) throw BuilderException("An entry's about text must not be blank!")
+        if(about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
     }
     var tag: TagDso = TagDso.none
 }

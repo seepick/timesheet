@@ -16,6 +16,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -69,45 +70,40 @@ class BuilderTest : DescribeSpec() {
         }
         describe("When ... invalid Then fail") {
             it("no entries") {
-                shouldThrow<BuilderException> {
-                    timesheet {}
-                }
+                failingTimesheet {}
             }
             it("starts with non-workday entry") {
-                shouldThrow<BuilderException> {
-                    timesheet {
-                        someDayOff()
-                    }
+                failingTimesheet {
+                    someDayOff()
                 }
             }
             it("day-off without reason entry") {
-                shouldThrow<BuilderException> {
-                    timesheet {
-                        someWorkingDay()
-                        dayOff("1.1.00")
-                    }
+                failingTimesheet {
+                    someWorkingDay()
+                    dayOff("1.1.00") // missing: becauseOf tag
                 }
             }
-            it("When build two entries with same date Then fail") {
-                shouldThrow<BuilderException> {
-                    timesheet {
-                        val conflictingDate = "1.1.21"
-                        someWorkingDay(date = conflictingDate)
-                        someWorkingDay(date = conflictingDate)
-                    }
-                }
+            it("two entries with same date") {
+                failingTimesheet {
+                    val conflictingDate = "1.1.21"
+                    someWorkingDay(date = conflictingDate)
+                    someWorkingDay(date = conflictingDate)
+
+                }.message shouldContain "1.1.21"
             }
-            it("When build entry without about message Then fail") {
-                shouldThrow<BuilderException> {
-                    timesheet {
-                        someWorkingDay {
-                            someTime about " "
-                        }
+            it("entry without about") {
+                failingTimesheet {
+                    someWorkingDate(someDate) {
+                        someTime about " "
                     }
-                }
+                }.message shouldContain someDate.toParsableDate()
             }
         }
     }
 }
 
-fun LocalDate.toParsableDate() = "$dayOfMonth.$monthValue.${year.toString().substring(2)}"
+fun failingTimesheet(dsl: TimeSheetDsl.() -> Unit): BuilderException =
+    shouldThrow {
+        timesheet(entryCode = dsl)
+    }
+

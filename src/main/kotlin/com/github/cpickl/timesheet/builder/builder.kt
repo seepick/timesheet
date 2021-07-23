@@ -100,10 +100,9 @@ private class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOff
             throw BuilderException("First entry must be a work day (due to... reasons; you wouldn't understand!!!11elf)")
         }
         val duplicates = entries.map { it.day }.groupingBy { it }.eachCount().filter { it.value > 1 }
-                if(duplicates.isNotEmpty()) {
-                    throw BuilderException("Duplicate date entries: " + duplicates.map { "${it.value}x ${it.key}" }.joinToString())
-                }
-//
+        if (duplicates.isNotEmpty()) {
+            throw BuilderException("Duplicate date entries: " + duplicates.map { "${it.value}x ${it.key.toParsableDate()}" }.joinToString())
+        }
     }
 
     private fun IntermediateEntryDso.toRealEntry(): TimeEntry = when (this) {

@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter
 
 private val DATE_FORMAT = DateTimeFormatter.ofPattern("d.M.yy")
 
+fun LocalDate.toParsableDate() = "$dayOfMonth.$monthValue.${year.toString().substring(2)}"
+
 fun String.parseDate(): LocalDate = LocalDate.parse(this, DATE_FORMAT)
 
 fun String.parseTime(): Pair<LocalTime, LocalTime> {
@@ -19,4 +21,3 @@ private fun parseTimePart(part: String) = if (part.contains(":")) {
 } else {
     LocalTime.of(part.toInt(), 0)
 }
-
