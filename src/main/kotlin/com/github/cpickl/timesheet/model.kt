@@ -29,9 +29,9 @@ data class TimeSheet(
 
 data class TimeEntries(
     private val entries: List<TimeEntry>,
-) {
+) : List<TimeEntry> by entries {
     init {
-        require(entries.first() is WorkDayEntry)
+        require(entries.first() is WorkDayEntry) { "First entry must be a working day but was: ${entries.first()}" }
     }
 
     val firstDate: LocalDate = (entries.first() as WorkDayEntry).hours.day

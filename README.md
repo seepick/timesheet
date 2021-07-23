@@ -45,7 +45,6 @@ class MyTimeSheet : TimeSheetProvider {
 
 # TODO
 
-* [ ] check+test for time overlap
 * [ ] customizable tags
 * [ ] colorized output
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
