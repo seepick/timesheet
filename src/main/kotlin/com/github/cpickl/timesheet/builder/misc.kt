@@ -26,12 +26,16 @@ internal data class IntermediateWorkDayEntryDso(
         if(about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
     }
     var tag: TagDso = TagDso.none
+
+    override fun toString() = "Day[${day.toParsableDate()}/${timeRange.toParseableString()} - tag: $tag]"
 }
 
 internal data class DayOffEntryDso(
     override val day: LocalDate,
 ) : IntermediateEntryDso() {
     var reason: DayOffReasonDso? = null
+
+    override fun toString() = "DayOff[${day.toParsableDate()} - reason: $reason]"
 }
 
 enum class TagDso(val realTag: Tag) {

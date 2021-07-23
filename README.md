@@ -45,14 +45,18 @@ class MyTimeSheet : TimeSheetProvider {
 
 # TODO
 
-* [ ] customizable tags
+* [ ] DSL feature: month("June") { day("Tue 10" ) }
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
-* [ ] support simplified syntax: `year("2021") { month("June") { day("Tue 10." | "10." | "10" ) { ... } } }`
-* [ ] use arrow's either for builder validation
-* [ ] detailed output (first print balance, then peer week each balance/total balance so far)
-* [ ] auto push messages (every day; via notification popup; create assembly and run in background; some evaluate kt file (dynamically load intellij's generated class file?! ;))
 
 ## Outlook
 
+* [ ] detailed output (first print balance, then peer week each balance/total balance so far)
+* [ ] use arrow's either for builder validation
+* [ ] multi-user: customizable work entry tags
+* [ ] multi-user: customizable day off reason
+* [ ] auto push messages
+    * every day; via notification popup;
+    * A) create kts kotlin script; execute via cronjob; defines timesheet and invokes kscript dependency (publish to maven local)
+    * B) create assembly and run in background; some evaluate kt file (dynamically load intellij's generated class file?! ;))
 * [ ] overview categories time spent (pie chart)
 * [ ] different Processors (text, excel)

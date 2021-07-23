@@ -37,21 +37,25 @@ data class TimeEntries(
         require(entries.first() is WorkDayEntry) { "First entry must be a working day but was: ${entries.first()}" }
     }
 
-    val firstDate: LocalDate = (entries.first() as WorkDayEntry).hours.day
+    val firstDate: LocalDate = (entries.first() as WorkDayEntry).dateRange.day
     val workEntries = entries.filterIsInstance<WorkDayEntry>()
     val dayOffEntries = entries.filterIsInstance<DayOffEntry>()
 }
 
-sealed class TimeEntry
+sealed class TimeEntry : TimeEntryFields
+
+interface TimeEntryFields {
+    val day: LocalDate
+}
 
 data class WorkDayEntry(
-    val hours: EntryDateRange,
+    val dateRange: EntryDateRange,
     val about: String,
     val tag: Tag,
 ) : TimeEntry() {
 
-    val duration: Minutes = hours.duration
-
+    val duration: Minutes = dateRange.duration
+    override val day: LocalDate = dateRange.day
 }
 
 enum class Tag {
@@ -99,7 +103,7 @@ data class TimeRange(
 
 
 data class DayOffEntry(
-    val day: LocalDate,
+    override val day: LocalDate,
     val tag: OffTag,
 ) : TimeEntry()
 

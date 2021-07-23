@@ -7,7 +7,9 @@ import com.github.cpickl.timesheet.Tag
 import com.github.cpickl.timesheet.TestConstants
 import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeRange
+import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDayEntry
+import com.github.cpickl.timesheet.any
 import com.github.cpickl.timesheet.someWorkEntry
 import com.github.cpickl.timesheet.someDayOff
 import com.github.cpickl.timesheet.someWorkingDate
@@ -17,7 +19,9 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Month
 
 class BuilderTest : DescribeSpec({
 
@@ -63,7 +67,7 @@ class BuilderTest : DescribeSpec({
             sheet.entries shouldBe TimeEntries(
                 listOf(
                     WorkDayEntry(
-                        hours = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),
+                        dateRange = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),
                         about = description,
                         tag = Tag.Meeting,
                     )
@@ -124,7 +128,69 @@ class BuilderTest : DescribeSpec({
             }.message shouldContain someTimeRangeString
         }
     }
+
+    describe("When ... year-month-day") {
+        it("When add work-day Then set date correctly") {
+            timesheet {
+                year(2003) {
+                    month(2) {
+                        day(1) {
+                            someWorkEntry()
+                        }
+                    }
+                }
+            } shouldHaveSingleEntryWithDate LocalDate.of(2003, 2, 1)
+        }
+        it("Given work-day When add day-off Then set date correctly") {
+            val day1 = 11
+            val day2 = 22
+
+            val sheet = timesheet {
+                year(2003) {
+                    month(2) {
+                        day(day1) {
+                            someWorkEntry()
+                        }
+                        someDayOff(day2)
+                    }
+                }
+            }
+
+            sheet.entries.size shouldBe 2
+            sheet.entries.last().day.dayOfMonth shouldBe day2
+        }
+    }
+
+    describe("When ... year-month-day combined with manual-oldschool") {
+        it("Given oldschool entry When add newschool entry Then both co-exist") {
+            val sheet = timesheet {
+                day("1.1.00") {
+                    someWorkEntry()
+                }
+                year(2000) {
+                    month(1) {
+                        day(2) {
+                            someWorkEntry()
+                        }
+                    }
+                }
+            }
+
+            sheet.entries.size shouldBe 2
+            sheet.entries.first().day shouldBe LocalDate.of(2000,1,1)
+            sheet.entries.last().day shouldBe LocalDate.of(2000,1,2)
+        }
+    }
 })
+
+fun YearMonthDsl.someDayOff(day: Int) {
+    dayOff(day) becauseOf DayOffReasonDso.any
+}
+
+infix fun TimeSheet.shouldHaveSingleEntryWithDate(expected: LocalDate) {
+    entries.size shouldBe 1
+    entries.first().day shouldBe expected
+}
 
 fun failingTimesheet(dsl: TimeSheetDsl.() -> Unit): BuilderException =
     shouldThrow {
