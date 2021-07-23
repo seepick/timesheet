@@ -43,7 +43,7 @@ sealed class TimeEntry
 
 data class WorkDayEntry(
     val hours: EntryDateRange,
-    val description: String,
+    val about: String,
     val tag: Tag,
 ) : TimeEntry() {
 
@@ -58,6 +58,7 @@ enum class Tag {
     Meeting,
     Organization,
     Education,
+    Scrum,
 }
 
 data class EntryDateRange(

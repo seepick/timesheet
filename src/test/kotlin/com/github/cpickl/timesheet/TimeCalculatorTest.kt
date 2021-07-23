@@ -1,5 +1,8 @@
 package com.github.cpickl.timesheet
 
+import com.github.cpickl.timesheet.builder.TimeSheetDsl
+import com.github.cpickl.timesheet.builder.TimeSheetInitDsl
+import com.github.cpickl.timesheet.builder.timesheet
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -14,7 +17,7 @@ class TimeCalculatorTest : StringSpec() {
     init {
         "single complete work day" {
             val report = calculate("1.6.21") {
-                fullDay("1.6.21")
+                fullWorkingDay("1.6.21")
             }
 
             report shouldBe TimeReport(
@@ -40,7 +43,7 @@ class TimeCalculatorTest : StringSpec() {
 
         "filter weekend" {
             val report = calculate("5.6.21") {
-                fullDay("4.6.21")
+                fullWorkingDay("4.6.21")
             }
 
             report.totalMinutesToWork shouldBe workMinutesPerDay
@@ -48,7 +51,7 @@ class TimeCalculatorTest : StringSpec() {
 
         "filter free day" {
             val report = calculate("2.6.21", { freeDays += WorkDay.Wednesday }) {
-                fullDay("1.6.21")
+                fullWorkingDay("1.6.21")
             }
 
             report.totalMinutesToWork shouldBe workMinutesPerDay
@@ -56,7 +59,7 @@ class TimeCalculatorTest : StringSpec() {
 
         "filter day off" {
             val report = calculate("2.6.21") {
-                fullDay("1.6.21")
+                fullWorkingDay("1.6.21")
                 someDayOff("2.6.21")
             }
 

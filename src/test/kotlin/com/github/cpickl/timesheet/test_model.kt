@@ -1,4 +1,7 @@
 package com.github.cpickl.timesheet
 
-val DayOffReason.Companion.any get() = DayOffReason.PublicHoliday
-val IntermediateTag.Companion.any get() = IntermediateTag.meet
+import com.github.cpickl.timesheet.builder.DayOffReasonDso
+import com.github.cpickl.timesheet.builder.TagDso
+
+val DayOffReasonDso.Companion.any get() = DayOffReasonDso.PublicHoliday
+val TagDso.Companion.any get() = TagDso.meet
