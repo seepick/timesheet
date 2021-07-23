@@ -6,7 +6,6 @@ import com.github.cpickl.timesheet.DayOffEntry
 import com.github.cpickl.timesheet.EntryDateRange
 import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeEntry
-import com.github.cpickl.timesheet.TimeRange
 import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDay
 import com.github.cpickl.timesheet.WorkDayEntry
@@ -54,6 +53,10 @@ private class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOff
 
     override fun day(date: String, code: DayDsl.() -> Unit) {
         currentDay = date.parseDate()
+        if (entries.any { it.day == currentDay }) {
+            throw BuilderException("Duplicate date entries: $date")
+        }
+
         code()
     }
 
@@ -65,7 +68,14 @@ private class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOff
     }
 
     override infix fun String.about(description: String): PostAboutDsl {
-        currentEntry = IntermediateWorkDayEntryDso(currentDay, this.parseTime(), description)
+        val timeRange = this.parseTimeRange()
+        currentEntry = IntermediateWorkDayEntryDso(currentDay, timeRange, description)
+        entries.filter { it.day == currentDay }
+            .filterIsInstance<IntermediateWorkDayEntryDso>()
+            .firstOrNull { it.timeRange.overlaps(timeRange) }
+            ?.let {
+                throw BuilderException("Overlap in time for the day ${currentDay.toParsableDate()}: ${timeRange.toParseableString()}!")
+            }
         entries += currentEntry
         return this@DslImplementation
     }
@@ -99,20 +109,13 @@ private class DslImplementation : TimeSheetInitDsl, TimeSheetDsl, DayDsl, DayOff
         if (entries.first() !is IntermediateWorkDayEntryDso) {
             throw BuilderException("First entry must be a work day (due to... reasons; you wouldn't understand!!!11elf)")
         }
-        val duplicates = entries.map { it.day }.groupingBy { it }.eachCount().filter { it.value > 1 }
-        if (duplicates.isNotEmpty()) {
-            throw BuilderException("Duplicate date entries: " + duplicates.map { "${it.value}x ${it.key.toParsableDate()}" }.joinToString())
-        }
     }
 
     private fun IntermediateEntryDso.toRealEntry(): TimeEntry = when (this) {
         is IntermediateWorkDayEntryDso -> WorkDayEntry(
             hours = EntryDateRange(
                 day = day,
-                range = TimeRange(
-                    start = timeRange.first,
-                    end = timeRange.second,
-                )
+                range = timeRange
             ),
             about = about,
             tag = tag.realTag,

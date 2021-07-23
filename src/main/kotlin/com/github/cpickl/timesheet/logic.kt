@@ -1,3 +1,5 @@
+@file:JvmName("Logic")
+
 package com.github.cpickl.timesheet
 
 import java.text.DecimalFormat

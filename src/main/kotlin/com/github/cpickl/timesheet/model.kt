@@ -1,5 +1,8 @@
+@file:JvmName("Model")
+
 package com.github.cpickl.timesheet
 
+import com.github.cpickl.timesheet.builder.toParseableString
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -72,11 +75,27 @@ data class TimeRange(
     val start: LocalTime,
     val end: LocalTime,
 ) {
-    val duration: Minutes = ChronoUnit.MINUTES.between(start, end)
-
     init {
         require(start.isBefore(end))
     }
+
+    val duration: Minutes = ChronoUnit.MINUTES.between(start, end)
+    private val parseableString = "${start.toParseableString()}-${end.toParseableString()}"
+
+    fun overlaps(other: TimeRange): Boolean {
+        println("$this <-> $other")
+        return when {
+            // MINOR can be improved
+            other.start == start && other.end == end -> true
+            other.start.isAfter(start) && other.start.isBefore(end) -> true
+            other.end.isAfter(start) && other.end.isBefore(end) -> true
+            other.start.isAfter(start) && other.end.isBefore(end) -> true
+            other.start.isBefore(start) && other.end.isAfter(end) -> true
+            else -> false
+        }
+    }
+
+    fun toParseableString() = parseableString
 }
 
 

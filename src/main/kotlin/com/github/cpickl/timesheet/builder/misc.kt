@@ -1,7 +1,10 @@
+@file:JvmName("Misc")
+
 package com.github.cpickl.timesheet.builder
 
 import com.github.cpickl.timesheet.OffTag
 import com.github.cpickl.timesheet.Tag
+import com.github.cpickl.timesheet.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -16,7 +19,7 @@ internal sealed class IntermediateEntryDso : IntermediateEntryDsoFields
 
 internal data class IntermediateWorkDayEntryDso(
     override val day: LocalDate,
-    val timeRange: Pair<LocalTime, LocalTime>,
+    val timeRange: TimeRange,
     val about: String,
 ) : IntermediateEntryDso() {
     init {

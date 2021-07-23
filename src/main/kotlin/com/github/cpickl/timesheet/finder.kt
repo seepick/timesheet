@@ -1,3 +1,5 @@
+@file:JvmName("Finder")
+
 package com.github.cpickl.timesheet
 
 interface TimeSheetFinder {
