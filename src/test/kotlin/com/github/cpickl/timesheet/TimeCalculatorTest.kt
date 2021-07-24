@@ -1,9 +1,7 @@
 package com.github.cpickl.timesheet
 
-import com.github.cpickl.timesheet.builder.Tags
 import com.github.cpickl.timesheet.builder.TimeSheetDsl
 import com.github.cpickl.timesheet.builder.TimeSheetInitDsl
-import com.github.cpickl.timesheet.builder.timesheet
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -47,7 +45,7 @@ class TimeCalculatorTest : StringSpec() {
         }
 
         "filter free day" {
-            val report = calculate("2.6.21", { freeDays += WorkDay.Wednesday }) {
+            val report = calculate("2.6.21", { daysOff += WorkDay.Wednesday }) {
                 fullWorkingDay("1.6.21")
             }
 

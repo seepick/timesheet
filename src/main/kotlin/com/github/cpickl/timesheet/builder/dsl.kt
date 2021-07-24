@@ -7,6 +7,7 @@ import com.github.cpickl.timesheet.EntryDateRange
 import com.github.cpickl.timesheet.Tag
 import com.github.cpickl.timesheet.InputValidationException
 import com.github.cpickl.timesheet.NoTag
+import com.github.cpickl.timesheet.OffReason
 import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeEntry
 import com.github.cpickl.timesheet.TimeRange
@@ -19,12 +20,38 @@ import java.time.Month
 interface Tags {
     fun all(): List<Tag>
     fun contains(tag: Tag): Boolean = all().contains(tag)
+
     companion object
 }
 
-fun <TAGS : Tags> timesheet(tags: TAGS, init: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
-    val dsl = DslImplementation(tags)
-    dsl.init()
+abstract class OffReasonsBuilder(
+
+) {
+
+}
+
+interface OffReasons {
+    fun all(): List<OffReason>
+    fun contains(tag: OffReason): Boolean = all().contains(tag)
+
+    companion object
+}
+
+fun <TAGS : Tags, OFF : OffReasons> context(
+    tags: TAGS,
+    offs: OFF,
+    init: TimeSheetInitDsl.() -> Unit = {}
+) = TimeContext(tags, offs, init)
+
+class TimeContext<TAGS : Tags, OFF : OffReasons>(
+    val tags: TAGS,
+    val offs: OFF,
+    val init: TimeSheetInitDsl.() -> Unit = {}
+)
+
+fun <TAGS : Tags, OFF : OffReasons> timesheet(context: TimeContext<TAGS, OFF>, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
+    val dsl = DslImplementation(context)
+    context.init(dsl)
     dsl.entryCode()
     return dsl.build()
 }
@@ -34,7 +61,7 @@ fun <TAGS : Tags> timesheet(tags: TAGS, init: TimeSheetInitDsl.() -> Unit = {}, 
 annotation class TimesheetAppDsl
 
 interface TimeSheetInitDsl {
-    var freeDays: MutableSet<WorkDay>
+    var daysOff: MutableSet<WorkDay>
 }
 
 @TimesheetAppDsl
@@ -47,7 +74,7 @@ interface TimeSheetDsl {
 
     fun year(year: Int, code: YearDsl.() -> Unit)
 
-    infix fun DayOffDsl.becauseOf(reason: DayOffReasonDso)
+    infix fun DayOffDsl.becauseOf(reason: OffReason)
 }
 
 interface YearDsl {
@@ -60,7 +87,7 @@ interface YearMonthDsl {
     fun dayOff(day: Int): DayOffDsl
 
     // necessary duplicate
-    infix fun DayOffDsl.becauseOf(reason: DayOffReasonDso)
+    infix fun DayOffDsl.becauseOf(reason: OffReason)
 }
 
 
@@ -78,14 +105,14 @@ interface PostAboutDsl {
     operator fun minus(tag: Tag)
 }
 
-private class DslImplementation<TAGS: Tags>(
-    private val tags: TAGS
+private class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
+    private val context: TimeContext<TAGS, OFFS>
 ) :
     TimeSheetInitDsl, TimeSheetDsl,
     WorkDayDsl, DayOffDsl, PostAboutDsl,
     YearDsl, YearMonthDsl {
 
-    override var freeDays = mutableSetOf<WorkDay>()
+    override var daysOff = mutableSetOf<WorkDay>()
     private val entries = mutableListOf<BuilderEntry>()
     private lateinit var currentDay: LocalDate
     private lateinit var currentEntry: BuilderEntry
@@ -160,7 +187,7 @@ private class DslImplementation<TAGS: Tags>(
 
     override fun tag(tag: Tag) {
         val entry = currentEntry as BuilderWorkDayEntry
-        if (!tags.contains(tag)) {
+        if (!context.tags.contains(tag)) {
             // FIXME test me; if configure no tags, and this tag requested doesnt exist; throw!
         }
         entry.tag = tag
@@ -172,8 +199,11 @@ private class DslImplementation<TAGS: Tags>(
     // DAY OFF DSL
     // ================================================================================================
 
-    override fun DayOffDsl.becauseOf(reason: DayOffReasonDso) {
+    override fun DayOffDsl.becauseOf(reason: OffReason) {
         val entry = currentEntry as BuilderDayOffEntry
+        if (!context.offs.contains(reason)) {
+            // FIXME test whether contains off reason
+        }
         entry.reason = reason
     }
 
@@ -189,7 +219,7 @@ private class DslImplementation<TAGS: Tags>(
             throw BuilderException("Invalid timesheet defined: ${e.message}", e)
         }
         return TimeSheet(
-            freeDays = freeDays,
+            freeDays = daysOff,
             entries = realEntries
         )
     }
@@ -208,8 +238,7 @@ private class DslImplementation<TAGS: Tags>(
         )
         is BuilderDayOffEntry -> DayOffEntry(
             day = day,
-            tag = reason?.realTag
-                ?: throw BuilderException("no day off reason was given for: $this")
+            reason = reason ?: throw BuilderException("no day off reason was given for: $this")
         )
     }
 

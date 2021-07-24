@@ -100,15 +100,15 @@ class NamedTag(
     override val label: String
 ) : Tag
 
-enum class DelmeTag {
-    None,
-    Business,
-    Coding,
-    Meeting,
-    Organization,
-    Education,
-    Scrum,
+
+interface OffReason {
+    val label: String
+    companion object
 }
+
+class NamedOffReason(
+    override val label: String
+): OffReason
 
 interface HasTimeRange {
     val timeRange: TimeRange
@@ -153,14 +153,7 @@ data class TimeRange(
 
 infix fun Int.until(m: Int) = TimeRange(LocalTime.of(this, 0), LocalTime.of(m, 0))
 
-
 data class DayOffEntry(
     override val day: LocalDate,
-    val tag: OffTag,
+    val reason: OffReason,
 ) : TimeEntry()
-
-enum class OffTag {
-    Sick,
-    PublicHoliday,
-    Vacation,
-}

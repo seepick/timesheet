@@ -2,9 +2,8 @@
 
 package com.github.cpickl.timesheet.builder
 
+import com.github.cpickl.timesheet.OffReason
 import com.github.cpickl.timesheet.Tag
-import com.github.cpickl.timesheet.OffTag
-import com.github.cpickl.timesheet.DelmeTag
 import java.time.LocalDate
 
 /** Construction of model because of invalid DSL definition failed. */
@@ -33,15 +32,7 @@ internal data class BuilderWorkDayEntry(
 internal data class BuilderDayOffEntry(
     override val day: LocalDate,
 ) : BuilderEntry() {
-    var reason: DayOffReasonDso? = null
+    var reason: OffReason? = null
 
     override fun toString() = "DayOff[${day.toParsableDate()} - reason: $reason]"
-}
-
-enum class DayOffReasonDso(val realTag: OffTag) {
-    Sickness(OffTag.Sick),
-    PublicHoliday(OffTag.PublicHoliday),
-    Vacation(OffTag.Vacation);
-
-    companion object
 }

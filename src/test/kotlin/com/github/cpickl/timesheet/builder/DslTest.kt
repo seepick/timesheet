@@ -2,8 +2,7 @@ package com.github.cpickl.timesheet.builder
 
 import com.github.cpickl.timesheet.DayOffEntry
 import com.github.cpickl.timesheet.EntryDateRange
-import com.github.cpickl.timesheet.OffTag
-import com.github.cpickl.timesheet.DelmeTag
+import com.github.cpickl.timesheet.OffReason
 import com.github.cpickl.timesheet.Tag
 import com.github.cpickl.timesheet.TestConstants
 import com.github.cpickl.timesheet.TimeEntries
@@ -12,6 +11,8 @@ import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDayEntry
 import com.github.cpickl.timesheet.until
 import com.github.cpickl.timesheet.any
+import com.github.cpickl.timesheet.failingTimesheet
+import com.github.cpickl.timesheet.shouldHaveSingleEntryWithDate
 import com.github.cpickl.timesheet.someWorkEntry
 import com.github.cpickl.timesheet.someDayOff
 import com.github.cpickl.timesheet.someWorkingDate
@@ -40,6 +41,7 @@ class BuilderTest : DescribeSpec({
     val anyYear = 2010
     val anyMonth = Month.JULY
     val someTag = Tag.any
+    val someOffReason = OffReason.any
 
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
@@ -83,12 +85,12 @@ class BuilderTest : DescribeSpec({
         it("day off") {
             val sheet = timesheet {
                 someWorkingDate(date1)
-                dayOff(date2.toParsableDate()) becauseOf DayOffReasonDso.PublicHoliday
+                dayOff(date2.toParsableDate()) becauseOf someOffReason
             }
 
             sheet.entries shouldContain DayOffEntry(
                 day = date2,
-                tag = OffTag.PublicHoliday,
+                reason = someOffReason,
             )
         }
     }
@@ -234,18 +236,3 @@ class BuilderTest : DescribeSpec({
         // TODO overlaps
     }
 })
-
-fun YearMonthDsl.someDayOff(day: Int) {
-    dayOff(day) becauseOf DayOffReasonDso.any
-}
-
-infix fun TimeSheet.shouldHaveSingleEntryWithDate(expected: LocalDate) {
-    entries.size shouldBe 1
-    entries.first().day shouldBe expected
-}
-
-fun failingTimesheet(dsl: TimeSheetDsl.() -> Unit): BuilderException =
-    shouldThrow {
-        timesheet(entryCode = dsl)
-    }
-

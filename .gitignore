@@ -1,4 +1,4 @@
 /.gradle/
 /build/
 /.idea/
-/src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheet.kt
+/src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheetApp.kt

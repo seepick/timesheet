@@ -3,26 +3,27 @@ package com.github.cpickl.timesheet
 import java.text.DecimalFormat
 import kotlin.math.abs
 
-interface ReportContext {
-    fun printCli()
-    // displays: yesterday's balance, total balance
-    fun showNotification()
+class ReportContext(
+    private val sheet: TimeSheet,
+    private val reportData: TimeReportData,
+) {
+
+    // TODO displays: yesterday's balance, total balance (CLI+NOTIFY)
+    fun printCli() {
+        println(reportData.hoursBalanceString)
+    }
+
+    fun showNotification() {
+        println("TODO") // TODO implement osascript
+    }
     // fun saveExcel(xls: File)
+
+
 }
 
 private val calculator = TimeCalculator()
-private fun TimeSheet.calculateReportData() = calculator.calculate(this)
 
-fun TimeSheet.printCli() {
-    val reportData = calculateReportData()
-    println(reportData.hoursBalanceString)
-}
-
-fun TimeSheet.showNotification() {
-    val reportData = calculateReportData()
-    println("TODO") // TODO implement osascript
-}
-
+fun TimeSheet.calculate() = ReportContext(this, calculator.calculate(this))
 
 data class TimeReportData(
     val sheet: TimeSheet,
