@@ -1,5 +1,6 @@
 package com.github.cpickl.timesheet
 
+import com.github.cpickl.timesheet.builder.Tags
 import com.github.cpickl.timesheet.builder.timesheet
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

@@ -3,6 +3,7 @@ package com.github.cpickl.timesheet.builder
 import com.github.cpickl.timesheet.DayOffEntry
 import com.github.cpickl.timesheet.EntryDateRange
 import com.github.cpickl.timesheet.OffTag
+import com.github.cpickl.timesheet.DelmeTag
 import com.github.cpickl.timesheet.Tag
 import com.github.cpickl.timesheet.TestConstants
 import com.github.cpickl.timesheet.TimeEntries
@@ -15,6 +16,7 @@ import com.github.cpickl.timesheet.someWorkEntry
 import com.github.cpickl.timesheet.someDayOff
 import com.github.cpickl.timesheet.someWorkingDate
 import com.github.cpickl.timesheet.someWorkingDay
+import com.github.cpickl.timesheet.timesheet
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
@@ -37,6 +39,7 @@ class BuilderTest : DescribeSpec({
     val description = "test description"
     val anyYear = 2010
     val anyMonth = Month.JULY
+    val someTag = Tag.any
 
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
@@ -63,7 +66,7 @@ class BuilderTest : DescribeSpec({
 
             val sheet = timesheet {
                 day(someDate.toParsableDate()) {
-                    "9:30-10" about description tag (BuilderTag.meet)
+                    "9:30-10" about description tag (someTag)
                 }
             }
 
@@ -72,7 +75,7 @@ class BuilderTest : DescribeSpec({
                     WorkDayEntry(
                         dateRange = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),
                         about = description,
-                        tag = Tag.Meeting,
+                        tag = someTag,
                     )
                 )
             )

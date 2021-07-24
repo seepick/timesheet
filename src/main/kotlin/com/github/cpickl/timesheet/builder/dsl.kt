@@ -1,10 +1,12 @@
-@file:JvmName("Builder")
+@file:JvmName("Dsl")
 
 package com.github.cpickl.timesheet.builder
 
 import com.github.cpickl.timesheet.DayOffEntry
 import com.github.cpickl.timesheet.EntryDateRange
+import com.github.cpickl.timesheet.Tag
 import com.github.cpickl.timesheet.InputValidationException
+import com.github.cpickl.timesheet.NoTag
 import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeEntry
 import com.github.cpickl.timesheet.TimeRange
@@ -14,9 +16,15 @@ import com.github.cpickl.timesheet.WorkDayEntry
 import java.time.LocalDate
 import java.time.Month
 
-fun timesheet(initCode: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
-    val dsl = DslImplementation()
-    dsl.initCode()
+interface Tags {
+    fun all(): List<Tag>
+    fun contains(tag: Tag): Boolean = all().contains(tag)
+    companion object
+}
+
+fun <TAGS : Tags> timesheet(tags: TAGS, init: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
+    val dsl = DslImplementation(tags)
+    dsl.init()
     dsl.entryCode()
     return dsl.build()
 }
@@ -32,7 +40,7 @@ interface TimeSheetInitDsl {
 @TimesheetAppDsl
 interface TimeSheetDsl {
     @Deprecated(message = "year(1) { month(2) { day(3) } }")
-    fun day(date: String, code: DayDsl.() -> Unit)
+    fun day(date: String, code: WorkDayDsl.() -> Unit)
 
     @Deprecated(message = "year(1) { month(2) { dayOff(3) } }")
     fun dayOff(date: String): DayOffDsl
@@ -48,7 +56,7 @@ interface YearDsl {
 
 @TimesheetAppDsl
 interface YearMonthDsl {
-    fun day(day: Int, code: DayDsl.() -> Unit)
+    fun day(day: Int, code: WorkDayDsl.() -> Unit)
     fun dayOff(day: Int): DayOffDsl
 
     // necessary duplicate
@@ -57,23 +65,24 @@ interface YearMonthDsl {
 
 
 @TimesheetAppDsl
-interface DayDsl {
+interface WorkDayDsl {
     infix fun String.about(description: String): PostAboutDsl
     operator fun String.minus(description: String): PostAboutDsl
-
 }
 
 interface DayOffDsl {
 }
 
 interface PostAboutDsl {
-    infix fun tag(tag: BuilderTag)
-    operator fun minus(tag: BuilderTag)
+    infix fun tag(tag: Tag)
+    operator fun minus(tag: Tag)
 }
 
-private class DslImplementation :
+private class DslImplementation<TAGS: Tags>(
+    private val tags: TAGS
+) :
     TimeSheetInitDsl, TimeSheetDsl,
-    DayDsl, DayOffDsl, PostAboutDsl,
+    WorkDayDsl, DayOffDsl, PostAboutDsl,
     YearDsl, YearMonthDsl {
 
     override var freeDays = mutableSetOf<WorkDay>()
@@ -84,7 +93,33 @@ private class DslImplementation :
     // MAIN TIMESHEET DSL
     // ================================================================================================
 
-    private fun _day(newDate: LocalDate, code: DayDsl.() -> Unit) {
+    private var currentYear = -1
+    private lateinit var currentMonth: Month
+
+    override fun year(year: Int, code: YearDsl.() -> Unit) {
+        currentYear = year
+        code()
+    }
+
+    override fun month(month: Month, code: YearMonthDsl.() -> Unit) {
+        currentMonth = month
+        code()
+    }
+
+    override fun day(day: Int, code: WorkDayDsl.() -> Unit) {
+        _day(dateByCurrentSetYearAndMonth(day), code)
+    }
+
+    override fun dayOff(day: Int): DayOffDsl =
+        _dayOff(dateByCurrentSetYearAndMonth(day))
+
+    private fun dateByCurrentSetYearAndMonth(day: Int) =
+        LocalDate.of(currentYear, currentMonth, day)
+
+    // INTERNALS
+    // ================================================================================================
+
+    private fun _day(newDate: LocalDate, code: WorkDayDsl.() -> Unit) {
         currentDay = newDate
         if (entries.any { it.day == currentDay }) {
             throw BuilderException("Duplicate date entries: ${newDate.toParsableDate()}")
@@ -100,7 +135,7 @@ private class DslImplementation :
         return this
     }
 
-    override fun day(date: String, code: DayDsl.() -> Unit) {
+    override fun day(date: String, code: WorkDayDsl.() -> Unit) {
         _day(date.parseDate(), code)
     }
 
@@ -121,14 +156,18 @@ private class DslImplementation :
     }
 
     // DAY POST ABOUT DSL
-    // ================================================================================================
+    // -------------------------------------------------------
 
-    override fun tag(tag: BuilderTag) {
+    override fun tag(tag: Tag) {
         val entry = currentEntry as BuilderWorkDayEntry
+        if (!tags.contains(tag)) {
+            // FIXME test me; if configure no tags, and this tag requested doesnt exist; throw!
+        }
         entry.tag = tag
     }
 
-    override operator fun minus(tag: BuilderTag) = tag(tag)
+    override operator fun minus(tag: Tag) = tag(tag)
+
 
     // DAY OFF DSL
     // ================================================================================================
@@ -155,6 +194,24 @@ private class DslImplementation :
         )
     }
 
+    // ENTRY TRANSFORMATION
+    // -------------------------------------------------------
+
+    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): TimeEntry = when (this) {
+        is BuilderWorkDayEntry -> WorkDayEntry(
+            dateRange = EntryDateRange(
+                day = day,
+                timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
+            ),
+            about = about,
+            tag = tag ?: NoTag
+        )
+        is BuilderDayOffEntry -> DayOffEntry(
+            day = day,
+            tag = reason?.realTag
+                ?: throw BuilderException("no day off reason was given for: $this")
+        )
+    }
 
     private fun transformTimeRange(timeRangeSpec: TimeRangeSpec, neighbours: Pair<BuilderEntry?, BuilderEntry?>, day: LocalDate): TimeRange =
         when (timeRangeSpec) {
@@ -185,46 +242,5 @@ private class DslImplementation :
         }
     }
 
-    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): TimeEntry = when (this) {
-        is BuilderWorkDayEntry -> WorkDayEntry(
-            dateRange = EntryDateRange(
-                day = day,
-                timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
-            ),
-            about = about,
-            tag = tag.realTag,
-        )
-        is BuilderDayOffEntry -> DayOffEntry(
-            day = day,
-            tag = reason?.realTag
-                ?: throw BuilderException("no day off reason was given for: $this")
-        )
-    }
-
-    // YEAR DSL
-    // ================================================================================================
-
-    private var currentYear = -1
-    private lateinit var currentMonth: Month
-
-    override fun year(year: Int, code: YearDsl.() -> Unit) {
-        currentYear = year
-        code()
-    }
-
-    override fun month(month: Month, code: YearMonthDsl.() -> Unit) {
-        currentMonth = month
-        code()
-    }
-
-    override fun day(day: Int, code: DayDsl.() -> Unit) {
-        _day(dateByCurrentSetYearAndMonth(day), code)
-    }
-
-    override fun dayOff(day: Int): DayOffDsl =
-        _dayOff(dateByCurrentSetYearAndMonth(day))
-
-    private fun dateByCurrentSetYearAndMonth(day: Int) =
-        LocalDate.of(currentYear, currentMonth, day)
 
 }

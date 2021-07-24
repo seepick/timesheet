@@ -2,7 +2,6 @@
 
 package com.github.cpickl.timesheet
 
-import com.github.cpickl.timesheet.builder.BuilderException
 import com.github.cpickl.timesheet.builder.toParsableDate
 import com.github.cpickl.timesheet.builder.toParseableString
 import java.time.DayOfWeek
@@ -85,7 +84,23 @@ data class WorkDayEntry(
 
 }
 
-enum class Tag {
+interface Tag {
+    val label: String
+
+    companion object {
+        val noTag = NoTag
+    }
+}
+
+object NoTag : Tag {
+    override val label = ""
+}
+
+class NamedTag(
+    override val label: String
+) : Tag
+
+enum class DelmeTag {
     None,
     Business,
     Coding,

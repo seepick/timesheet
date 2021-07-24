@@ -1,5 +1,6 @@
 package com.github.cpickl.timesheet
 
+import com.github.cpickl.timesheet.builder.Tags
 import com.github.cpickl.timesheet.builder.TimeSheetDsl
 import com.github.cpickl.timesheet.builder.TimeSheetInitDsl
 import com.github.cpickl.timesheet.builder.timesheet
@@ -67,7 +68,7 @@ class TimeCalculatorTest : StringSpec() {
 
     private fun calculate(today: String, initCode: TimeSheetInitDsl.() -> Unit = {}, sheet: TimeSheetDsl.() -> Unit) =
         TimeCalculator(clockReturning(today))
-            .calculate(timesheet(initCode = initCode, entryCode = sheet))
+            .calculate(timesheet(init = initCode, entryCode = sheet))
 
     private fun clockReturning(date: String): Clock {
         val clock = mockk<Clock>()
