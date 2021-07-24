@@ -9,6 +9,7 @@ import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeRange
 import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDayEntry
+import com.github.cpickl.timesheet.until
 import com.github.cpickl.timesheet.any
 import com.github.cpickl.timesheet.someWorkEntry
 import com.github.cpickl.timesheet.someDayOff
@@ -66,7 +67,7 @@ class BuilderTest : DescribeSpec({
                 }
             }
 
-            sheet.entries shouldBe TimeEntries(
+            sheet.entries shouldBe TimeEntries.newValidatedOrThrow(
                 listOf(
                     WorkDayEntry(
                         dateRange = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),
@@ -120,14 +121,14 @@ class BuilderTest : DescribeSpec({
                 }
             }.message shouldContain someDate.toParsableDate()
         }
-
+        // TODO test 2 days off at same date
         it("two work entries with same time") {
             failingTimesheet {
                 someWorkingDate(someDate) {
                     someWorkEntry(timeRange = someTimeRangeString)
                     someWorkEntry(timeRange = someTimeRangeString)
                 }
-            }.message shouldContain someTimeRangeString
+            }.message shouldContain someDate.toParsableDate() // someTimeRangeString ... unfortunately this info is lost due to dynamic time construction and lack of validation info
         }
     }
 
@@ -181,9 +182,53 @@ class BuilderTest : DescribeSpec({
             }
 
             sheet.entries.size shouldBe 2
-            sheet.entries.first().day shouldBe LocalDate.of(2000,1,1)
-            sheet.entries.last().day shouldBe LocalDate.of(2000,1,2)
+            sheet.entries.first().day shouldBe LocalDate.of(2000, 1, 1)
+            sheet.entries.last().day shouldBe LocalDate.of(2000, 1, 2)
         }
+    }
+
+    describe("When ... partial time range") {
+        it("open end success") {
+            val sheet = timesheet {
+                someWorkingDate {
+                    "0-" - "open end entry"
+                    "1-2" - "last entry"
+                }
+            }
+
+            sheet.entries.workEntries.size shouldBe 2
+            sheet.entries.workEntries.first().dateRange.timeRange shouldBe (0 until 1)
+        }
+        it("open begin success") {
+            val sheet = timesheet {
+                someWorkingDate {
+                    "0-1" - "first entry"
+                    "-2" - "open begin entry"
+                }
+            }
+
+            sheet.entries.workEntries.size shouldBe 2
+            sheet.entries.workEntries.last().dateRange.timeRange shouldBe (1 until 2)
+        }
+        it("single open end fail") {
+            val exception = failingTimesheet {
+                someWorkingDay("1.2.03") {
+                    "0-" - "open end entry"
+                }
+            }
+            exception.message shouldContain "00:00-"
+            exception.message shouldContain "1.2.03"
+        }
+        it("single end end fail") {
+            val exception = failingTimesheet {
+                someWorkingDay("1.2.03") {
+                    "-1" - "open begin entry"
+                }
+            }
+            exception.message shouldContain "1:00"
+            exception.message shouldContain "1.2.03"
+        }
+        // TODO overlaps
     }
 })
 

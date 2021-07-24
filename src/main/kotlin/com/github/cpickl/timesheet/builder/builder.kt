@@ -4,8 +4,10 @@ package com.github.cpickl.timesheet.builder
 
 import com.github.cpickl.timesheet.DayOffEntry
 import com.github.cpickl.timesheet.EntryDateRange
+import com.github.cpickl.timesheet.InputValidationException
 import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeEntry
+import com.github.cpickl.timesheet.TimeRange
 import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDay
 import com.github.cpickl.timesheet.WorkDayEntry
@@ -29,7 +31,10 @@ interface TimeSheetInitDsl {
 
 @TimesheetAppDsl
 interface TimeSheetDsl {
+    @Deprecated(message = "year(1) { month(2) { day(3) } }")
     fun day(date: String, code: DayDsl.() -> Unit)
+
+    @Deprecated(message = "year(1) { month(2) { dayOff(3) } }")
     fun dayOff(date: String): DayOffDsl
 
     fun year(year: Int, code: YearDsl.() -> Unit)
@@ -88,15 +93,15 @@ private class DslImplementation :
         code()
     }
 
-    override fun day(date: String, code: DayDsl.() -> Unit) {
-        _day(date.parseDate(), code)
-    }
-
     private fun _dayOff(newDate: LocalDate): DayOffDsl {
         currentDay = newDate
         currentEntry = DayOffEntryDso(currentDay)
         entries += currentEntry
         return this
+    }
+
+    override fun day(date: String, code: DayDsl.() -> Unit) {
+        _day(date.parseDate(), code)
     }
 
     override fun dayOff(date: String): DayOffDsl =
@@ -108,14 +113,9 @@ private class DslImplementation :
     override operator fun String.minus(description: String) = about(description)
 
     override infix fun String.about(description: String): PostAboutDsl {
-        val timeRange = this.parseTimeRange()
-        currentEntry = IntermediateWorkDayEntryDso(currentDay, timeRange, description)
-        entries.filter { it.day == currentDay }
-            .filterIsInstance<IntermediateWorkDayEntryDso>()
-            .firstOrNull { it.timeRange.overlaps(timeRange) }
-            ?.let {
-                throw BuilderException("Overlap in time for the day ${currentDay.toParsableDate()}: ${timeRange.toParseableString()}!")
-            }
+        val timeRangeSpec = TimeRangeSpec.parse(this)
+        // overlap validation is done afterwards (as time ranges are built dynamically)
+        currentEntry = IntermediateWorkDayEntryDso(currentDay, timeRangeSpec, description)
         entries += currentEntry
         return this@DslImplementation
     }
@@ -142,27 +142,54 @@ private class DslImplementation :
     // ================================================================================================
 
     fun build(): TimeSheet {
-        validate()
+        val realEntries = try {
+            TimeEntries.newValidatedOrThrow(entries.mapIndexed { i, entry ->
+                entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
+            })
+        } catch (e: InputValidationException) {
+            throw BuilderException("Invalid timesheet defined: ${e.message}", e)
+        }
         return TimeSheet(
             freeDays = freeDays,
-            entries = TimeEntries(entries.map { it.toRealEntry() })
+            entries = realEntries
         )
     }
 
-    private fun validate() {
-        if (entries.isEmpty()) {
-            throw BuilderException("Why you wanna try to build a timesheet without any entries? That has no sense, non-sense!")
+
+    private fun transformTimeRange(timeRangeSpec: TimeRangeSpec, neighbours: Pair<IntermediateEntryDso?, IntermediateEntryDso?>, day: LocalDate): TimeRange =
+        when (timeRangeSpec) {
+            is TimeRangeSpec.ClosedRangeSpec -> timeRangeSpec.toTimeRange()
+            is TimeRangeSpec.OpenStartRangeSpec -> transformOpenAndEndRange(true, timeRangeSpec, neighbours, day)
+            is TimeRangeSpec.OpenEndRangeSpec -> transformOpenAndEndRange(false, timeRangeSpec, neighbours, day)
         }
-        if (entries.first() !is IntermediateWorkDayEntryDso) {
-            throw BuilderException("First entry must be a work day (due to... reasons; you wouldn't understand!!!11elf)")
+
+    private fun transformOpenAndEndRange(isStartOpen: Boolean, timeRangeSpec: TimeRangeSpec, neighbours: Pair<IntermediateEntryDso?, IntermediateEntryDso?>, day: LocalDate): TimeRange {
+        val label = if (isStartOpen) "start" else "end"
+        val labelInversed = if (isStartOpen) "end" else "start"
+        val labelNeighbour = if (isStartOpen) "previous" else "following"
+        val labelPrefix = "On ${day.toParsableDate()} an invalid open-$label-entry was created '${timeRangeSpec.toParseableString()}': "
+        val neighbour = if (isStartOpen) neighbours.first else neighbours.second ?: {
+            throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to EXIST!")
+        }
+        if (neighbour !is IntermediateWorkDayEntryDso) {
+            throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to be a WORK day!")
+        }
+        val requireType = if (isStartOpen) HasEndTime::class else HasStartTime::class
+        if (!requireType.isInstance(neighbour.timeRangeSpec)) {
+            throw BuilderException("$labelPrefix $labelNeighbour neighbour expected $labelInversed TIME to be defined!")
+        }
+        return if (isStartOpen) {
+            (timeRangeSpec as TimeRangeSpec.OpenStartRangeSpec).toTimeRange(start = (neighbour.timeRangeSpec as HasEndTime).end)
+        } else {
+            (timeRangeSpec as TimeRangeSpec.OpenEndRangeSpec).toTimeRange(end = (neighbour.timeRangeSpec as HasStartTime).start)
         }
     }
 
-    private fun IntermediateEntryDso.toRealEntry(): TimeEntry = when (this) {
+    private fun IntermediateEntryDso.toRealEntry(neighbours: Pair<IntermediateEntryDso?, IntermediateEntryDso?>): TimeEntry = when (this) {
         is IntermediateWorkDayEntryDso -> WorkDayEntry(
             dateRange = EntryDateRange(
                 day = day,
-                range = timeRange
+                timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
             ),
             about = about,
             tag = tag.realTag,

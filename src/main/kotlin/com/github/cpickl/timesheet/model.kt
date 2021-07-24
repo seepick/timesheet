@@ -2,6 +2,8 @@
 
 package com.github.cpickl.timesheet
 
+import com.github.cpickl.timesheet.builder.BuilderException
+import com.github.cpickl.timesheet.builder.toParsableDate
 import com.github.cpickl.timesheet.builder.toParseableString
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -30,17 +32,41 @@ data class TimeSheet(
 
 }
 
-data class TimeEntries(
+class TimeEntries private constructor(
     private val entries: List<TimeEntry>,
 ) : List<TimeEntry> by entries {
-    init {
-        require(entries.first() is WorkDayEntry) { "First entry must be a working day but was: ${entries.first()}" }
+
+    companion object {
+        fun newValidatedOrThrow(entries: List<TimeEntry>): TimeEntries {
+            if (entries.isEmpty()) {
+                throw InputValidationException("Why you wanna try to build a timesheet without any entries? That has no sense, non-sense!")
+            }
+            if (entries.first() !is WorkDayEntry) {
+                throw InputValidationException("First entry must be a working day but was: ${entries.first()}")
+            }
+            entries.filterIsInstance<WorkDayEntry>().groupBy { it.dateRange.day }.forEach { day, dayEntries ->
+                val isInvalid = dayEntries.foldIndexed(false) { i, acc, entry ->
+                    println("i$i $entry (acc: $acc)")
+                    when {
+                        acc -> acc // already invalid, just continue
+                        i == dayEntries.size - 1 -> false // last entry has nothing to overlap with, continue+done
+                        else -> entry.overlaps(dayEntries[i + 1])
+                    }
+                }
+                if (isInvalid) {
+                    throw InputValidationException("Overlap in time for the day: ${day.toParsableDate()}!")
+                }
+            }
+            return TimeEntries(entries)
+        }
     }
 
     val firstDate: LocalDate = (entries.first() as WorkDayEntry).dateRange.day
     val workEntries = entries.filterIsInstance<WorkDayEntry>()
     val dayOffEntries = entries.filterIsInstance<DayOffEntry>()
 }
+
+open class InputValidationException(message: String) : Exception(message)
 
 sealed class TimeEntry : TimeEntryFields
 
@@ -52,10 +78,11 @@ data class WorkDayEntry(
     val dateRange: EntryDateRange,
     val about: String,
     val tag: Tag,
-) : TimeEntry() {
+) : TimeEntry(), HasTimeRange by dateRange {
 
     val duration: Minutes = dateRange.duration
     override val day: LocalDate = dateRange.day
+
 }
 
 enum class Tag {
@@ -68,11 +95,18 @@ enum class Tag {
     Scrum,
 }
 
+interface HasTimeRange {
+    val timeRange: TimeRange
+
+    fun overlaps(otherRange: HasTimeRange): Boolean =
+        timeRange.overlaps(otherRange.timeRange).also { println("overlaps $it: $this") }
+}
+
 data class EntryDateRange(
     val day: LocalDate,
-    val range: TimeRange,
-) {
-    val duration: Minutes = range.duration
+    override val timeRange: TimeRange,
+) : HasTimeRange {
+    val duration: Minutes = timeRange.duration
 }
 
 data class TimeRange(
@@ -86,6 +120,9 @@ data class TimeRange(
     val duration: Minutes = ChronoUnit.MINUTES.between(start, end)
     private val parseableString = "${start.toParseableString()}-${end.toParseableString()}"
 
+
+    fun toParseableString() = parseableString
+
     fun overlaps(other: TimeRange): Boolean {
         // MINOR can be improved
         return when {
@@ -97,9 +134,9 @@ data class TimeRange(
             else -> false
         }
     }
-
-    fun toParseableString() = parseableString
 }
+
+infix fun Int.until(m: Int) = TimeRange(LocalTime.of(this, 0), LocalTime.of(m, 0))
 
 
 data class DayOffEntry(

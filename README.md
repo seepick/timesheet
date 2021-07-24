@@ -1,6 +1,8 @@
 # Timesheet
 
-Keep track of your working hours by using a comfortable Kotlin DSL. No user interface, no command line, just code.
+Keep track of your working hours with an elegant **Kotlin DSL**.
+
+*No spreadsheet. No text file. Just wonderful code!*
 
 ```kotlin
 timesheet({
@@ -49,8 +51,10 @@ class MyTimeSheet : TimeSheetProvider {
 
 # TODO
 
+* [ ] logger
 * [ ] DSL feature:  day("tue 10" )
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
+* [ ] allow day off day ranges: `dayOff("28.1.2021", "3.2.2021")`
 
 ## Outlook
 

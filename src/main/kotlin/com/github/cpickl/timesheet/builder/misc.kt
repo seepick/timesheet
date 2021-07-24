@@ -4,12 +4,10 @@ package com.github.cpickl.timesheet.builder
 
 import com.github.cpickl.timesheet.OffTag
 import com.github.cpickl.timesheet.Tag
-import com.github.cpickl.timesheet.TimeRange
 import java.time.LocalDate
-import java.time.LocalTime
 
 /** Construction of model because of invalid DSL definition failed. */
-class BuilderException(message: String) : Exception(message)
+class BuilderException(message: String, cause: Exception? = null) : Exception(message, cause)
 
 interface IntermediateEntryDsoFields {
     val day: LocalDate
@@ -19,15 +17,16 @@ internal sealed class IntermediateEntryDso : IntermediateEntryDsoFields
 
 internal data class IntermediateWorkDayEntryDso(
     override val day: LocalDate,
-    val timeRange: TimeRange,
+    val timeRangeSpec: TimeRangeSpec,
     val about: String,
 ) : IntermediateEntryDso() {
     init {
-        if(about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
+        if (about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
     }
+
     var tag: TagDso = TagDso.none
 
-    override fun toString() = "Day[${day.toParsableDate()}/${timeRange.toParseableString()} - tag: $tag]"
+    override fun toString() = "Day[${day.toParsableDate()}/${timeRangeSpec.toParseableString()} - tag: $tag]"
 }
 
 internal data class DayOffEntryDso(
