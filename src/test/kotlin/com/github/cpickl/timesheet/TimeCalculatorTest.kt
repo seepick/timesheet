@@ -20,7 +20,7 @@ class TimeCalculatorTest : StringSpec() {
                 fullWorkingDay("1.6.21")
             }
 
-            report shouldBe TimeReport(
+            report shouldBe TimeReportData(
                 totalMinutesToWork = (8 * minutesInHour),
                 totalMinutesWorked = (8 * minutesInHour),
             )
@@ -34,7 +34,7 @@ class TimeCalculatorTest : StringSpec() {
                 }
             }
 
-            report shouldBe TimeReport(
+            report shouldBe TimeReportData(
                 totalMinutesToWork = (8 * minutesInHour),
                 totalMinutesWorked = (6 * minutesInHour),
             )
@@ -63,7 +63,7 @@ class TimeCalculatorTest : StringSpec() {
                 someDayOff("2.6.21")
             }
 
-            report shouldBe TimeReport(
+            report shouldBe TimeReportData(
                 totalMinutesToWork = (8 * minutesInHour),
                 totalMinutesWorked = (8 * minutesInHour),
             )

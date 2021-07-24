@@ -56,9 +56,7 @@ sealed class TimeRangeSpec {
             } else {
                 throw TimeParseException("Must define either start or end time! For: [$input]")
             }
-            println("  result: $result")
             return result
-//    return TimeRange(parseTimePart(parts[0]), parseTimePart(parts[1]))
         }
 
         private fun parseTimePart(input: String): LocalTime =

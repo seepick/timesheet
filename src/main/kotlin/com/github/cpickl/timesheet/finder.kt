@@ -10,6 +10,11 @@ class ClasspathTimesheetFinder(
     private val fqn: String
 ) : TimeSheetFinder {
     override fun find(): TimeSheet {
-        return (Class.forName(fqn).declaredConstructors[0].newInstance() as TimeSheetProvider).provide()
+        val clazz = try {
+            Class.forName(fqn)
+        } catch (e: ClassNotFoundException) {
+            throw Exception("Could not find class '$fqn' in classpath. Please create own (see README file).")
+        }
+        return (clazz.declaredConstructors[0].newInstance() as TimeSheetProvider).provide()
     }
 }

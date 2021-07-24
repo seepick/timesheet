@@ -9,45 +9,32 @@ import java.time.LocalDate
 /** Construction of model because of invalid DSL definition failed. */
 class BuilderException(message: String, cause: Exception? = null) : Exception(message, cause)
 
-interface IntermediateEntryDsoFields {
+interface BuilderEntryFields {
     val day: LocalDate
 }
 
-internal sealed class IntermediateEntryDso : IntermediateEntryDsoFields
+internal sealed class BuilderEntry : BuilderEntryFields
 
-internal data class IntermediateWorkDayEntryDso(
+internal data class BuilderWorkDayEntry(
     override val day: LocalDate,
     val timeRangeSpec: TimeRangeSpec,
     val about: String,
-) : IntermediateEntryDso() {
+) : BuilderEntry() {
     init {
         if (about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
     }
 
-    var tag: TagDso = TagDso.none
+    var tag: Tag?
 
     override fun toString() = "Day[${day.toParsableDate()}/${timeRangeSpec.toParseableString()} - tag: $tag]"
 }
 
-internal data class DayOffEntryDso(
+internal data class BuilderDayOffEntry(
     override val day: LocalDate,
-) : IntermediateEntryDso() {
+) : BuilderEntry() {
     var reason: DayOffReasonDso? = null
 
     override fun toString() = "DayOff[${day.toParsableDate()} - reason: $reason]"
-}
-
-enum class TagDso(val realTag: Tag) {
-    none(Tag.None),
-    biz(Tag.Business),
-    orga(Tag.Organization),
-    meet(Tag.Meeting),
-    code(Tag.Coding),
-    edu(Tag.Education),
-    scrum(Tag.Scrum),
-    ;
-
-    companion object
 }
 
 

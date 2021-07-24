@@ -1,6 +1,7 @@
 package com.github.cpickl.timesheet
 
 /** Main entrance point. */
-fun interface TimeSheetProvider {
+interface TimeSheetProvider {
     fun provide(): TimeSheet
+    fun chooseReport(report: ReportContext)
 }

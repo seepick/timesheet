@@ -1,7 +1,7 @@
 package com.github.cpickl.timesheet
 
 import com.github.cpickl.timesheet.builder.DayDsl
-import com.github.cpickl.timesheet.builder.TagDso
+import com.github.cpickl.timesheet.builder.BuilderTag
 import com.github.cpickl.timesheet.builder.timesheet
 import java.time.Month
 
@@ -10,20 +10,28 @@ fun main() {
         year(2021) {
             month(Month.JULY) {
                 day(1) {
-                    "9-10" - "self admin" - TagDso.orga
-                    standup() // enhance DSL with custom extension functions; enjoy the full power of code!
-                    "10:30-12:30" - "commons tests" - TagDso.code
-                    "13:30-14:30" - "refine stories" - TagDso.biz
-                    "14:30-16" - "commons tests" - TagDso.code
-                    "16-17" - "story alignment" - TagDso.meet
+                    "9-" - "self admin" - BuilderTag.orga
+                    standup() // enhance DSL with custom extensions, nice :)
+                    "-12:30" - "commons tests" - BuilderTag.code
+                    "13:30-" - "refine stories" - BuilderTag.biz
+                    "14:30-" - "commons tests" - BuilderTag.code
+                    "16-17" - "story alignment" - BuilderTag.meet
                 }
             }
         }
-    }.also {
-        println(it)
-    }
+    }.printCli()
 }
 
 private fun DayDsl.standup() {
-    "10-10:30" - "standup" - TagDso.meet
+    "10-10:30" - "standup" - BuilderTag.meet
+}
+class MyTimeSheet : TimeSheetProvider {
+    override fun provide() = timesheet {
+        // ... define your times here ...
+    }
+
+    override fun chooseReport(report: ReportContext) {
+        report.printCli()
+//        report.showNotification()
+    }
 }

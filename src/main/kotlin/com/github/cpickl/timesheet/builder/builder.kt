@@ -67,8 +67,8 @@ interface DayOffDsl {
 }
 
 interface PostAboutDsl {
-    infix fun tag(tag: TagDso)
-    operator fun minus(tag: TagDso)
+    infix fun tag(tag: BuilderTag)
+    operator fun minus(tag: BuilderTag)
 }
 
 private class DslImplementation :
@@ -77,9 +77,9 @@ private class DslImplementation :
     YearDsl, YearMonthDsl {
 
     override var freeDays = mutableSetOf<WorkDay>()
-    private val entries = mutableListOf<IntermediateEntryDso>()
+    private val entries = mutableListOf<BuilderEntry>()
     private lateinit var currentDay: LocalDate
-    private lateinit var currentEntry: IntermediateEntryDso
+    private lateinit var currentEntry: BuilderEntry
 
     // MAIN TIMESHEET DSL
     // ================================================================================================
@@ -95,7 +95,7 @@ private class DslImplementation :
 
     private fun _dayOff(newDate: LocalDate): DayOffDsl {
         currentDay = newDate
-        currentEntry = DayOffEntryDso(currentDay)
+        currentEntry = BuilderDayOffEntry(currentDay)
         entries += currentEntry
         return this
     }
@@ -115,7 +115,7 @@ private class DslImplementation :
     override infix fun String.about(description: String): PostAboutDsl {
         val timeRangeSpec = TimeRangeSpec.parse(this)
         // overlap validation is done afterwards (as time ranges are built dynamically)
-        currentEntry = IntermediateWorkDayEntryDso(currentDay, timeRangeSpec, description)
+        currentEntry = BuilderWorkDayEntry(currentDay, timeRangeSpec, description)
         entries += currentEntry
         return this@DslImplementation
     }
@@ -123,18 +123,18 @@ private class DslImplementation :
     // DAY POST ABOUT DSL
     // ================================================================================================
 
-    override fun tag(tag: TagDso) {
-        val entry = currentEntry as IntermediateWorkDayEntryDso
+    override fun tag(tag: BuilderTag) {
+        val entry = currentEntry as BuilderWorkDayEntry
         entry.tag = tag
     }
 
-    override operator fun minus(tag: TagDso) = tag(tag)
+    override operator fun minus(tag: BuilderTag) = tag(tag)
 
     // DAY OFF DSL
     // ================================================================================================
 
     override fun DayOffDsl.becauseOf(reason: DayOffReasonDso) {
-        val entry = currentEntry as DayOffEntryDso
+        val entry = currentEntry as BuilderDayOffEntry
         entry.reason = reason
     }
 
@@ -156,14 +156,14 @@ private class DslImplementation :
     }
 
 
-    private fun transformTimeRange(timeRangeSpec: TimeRangeSpec, neighbours: Pair<IntermediateEntryDso?, IntermediateEntryDso?>, day: LocalDate): TimeRange =
+    private fun transformTimeRange(timeRangeSpec: TimeRangeSpec, neighbours: Pair<BuilderEntry?, BuilderEntry?>, day: LocalDate): TimeRange =
         when (timeRangeSpec) {
             is TimeRangeSpec.ClosedRangeSpec -> timeRangeSpec.toTimeRange()
             is TimeRangeSpec.OpenStartRangeSpec -> transformOpenAndEndRange(true, timeRangeSpec, neighbours, day)
             is TimeRangeSpec.OpenEndRangeSpec -> transformOpenAndEndRange(false, timeRangeSpec, neighbours, day)
         }
 
-    private fun transformOpenAndEndRange(isStartOpen: Boolean, timeRangeSpec: TimeRangeSpec, neighbours: Pair<IntermediateEntryDso?, IntermediateEntryDso?>, day: LocalDate): TimeRange {
+    private fun transformOpenAndEndRange(isStartOpen: Boolean, timeRangeSpec: TimeRangeSpec, neighbours: Pair<BuilderEntry?, BuilderEntry?>, day: LocalDate): TimeRange {
         val label = if (isStartOpen) "start" else "end"
         val labelInversed = if (isStartOpen) "end" else "start"
         val labelNeighbour = if (isStartOpen) "previous" else "following"
@@ -171,7 +171,7 @@ private class DslImplementation :
         val neighbour = if (isStartOpen) neighbours.first else neighbours.second ?: {
             throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to EXIST!")
         }
-        if (neighbour !is IntermediateWorkDayEntryDso) {
+        if (neighbour !is BuilderWorkDayEntry) {
             throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to be a WORK day!")
         }
         val requireType = if (isStartOpen) HasEndTime::class else HasStartTime::class
@@ -185,8 +185,8 @@ private class DslImplementation :
         }
     }
 
-    private fun IntermediateEntryDso.toRealEntry(neighbours: Pair<IntermediateEntryDso?, IntermediateEntryDso?>): TimeEntry = when (this) {
-        is IntermediateWorkDayEntryDso -> WorkDayEntry(
+    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): TimeEntry = when (this) {
+        is BuilderWorkDayEntry -> WorkDayEntry(
             dateRange = EntryDateRange(
                 day = day,
                 timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
@@ -194,7 +194,7 @@ private class DslImplementation :
             about = about,
             tag = tag.realTag,
         )
-        is DayOffEntryDso -> DayOffEntry(
+        is BuilderDayOffEntry -> DayOffEntry(
             day = day,
             tag = reason?.realTag
                 ?: throw BuilderException("no day off reason was given for: $this")

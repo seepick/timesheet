@@ -29,7 +29,6 @@ data class TimeSheet(
     private val freeDaysJavaType = freeDays.map { it.allDays }
 
     fun freeDaysContains(day: DayOfWeek) = freeDaysJavaType.contains(day)
-
 }
 
 class TimeEntries private constructor(
@@ -46,7 +45,6 @@ class TimeEntries private constructor(
             }
             entries.filterIsInstance<WorkDayEntry>().groupBy { it.dateRange.day }.forEach { day, dayEntries ->
                 val isInvalid = dayEntries.foldIndexed(false) { i, acc, entry ->
-                    println("i$i $entry (acc: $acc)")
                     when {
                         acc -> acc // already invalid, just continue
                         i == dayEntries.size - 1 -> false // last entry has nothing to overlap with, continue+done
@@ -64,6 +62,8 @@ class TimeEntries private constructor(
     val firstDate: LocalDate = (entries.first() as WorkDayEntry).dateRange.day
     val workEntries = entries.filterIsInstance<WorkDayEntry>()
     val dayOffEntries = entries.filterIsInstance<DayOffEntry>()
+
+    override fun toString() = "TimeEntries[entries=$entries]"
 }
 
 open class InputValidationException(message: String) : Exception(message)
@@ -85,21 +85,11 @@ data class WorkDayEntry(
 
 }
 
-enum class Tag {
-    None,
-    Business,
-    Coding,
-    Meeting,
-    Organization,
-    Education,
-    Scrum,
-}
-
 interface HasTimeRange {
     val timeRange: TimeRange
 
     fun overlaps(otherRange: HasTimeRange): Boolean =
-        timeRange.overlaps(otherRange.timeRange).also { println("overlaps $it: $this") }
+        timeRange.overlaps(otherRange.timeRange)
 }
 
 data class EntryDateRange(
@@ -149,3 +139,28 @@ enum class OffTag {
     PublicHoliday,
     Vacation,
 }
+
+class Tags {
+    companion object {
+        private val _all: MutableList<Tag> = mutableListOf()
+        val all: List<Tag> = _all
+
+        fun add(tag: Tag) {
+            _all += tag
+        }
+    }
+}
+
+data class Tag(val id: String) {
+    fun register() {
+        Tags.add(this)
+    }
+}
+
+val tagCode = Tag("code").register()
+val Tags.Companion.code get() = tagCode
+
+val tagMeet = Tag("code").register()
+val Tags.Companion.code get() = tagCode
+
+

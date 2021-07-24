@@ -3,8 +3,29 @@ package com.github.cpickl.timesheet
 import java.text.DecimalFormat
 import kotlin.math.abs
 
+interface ReportContext {
+    fun printCli()
+    // displays: yesterday's balance, total balance
+    fun showNotification()
+    // fun saveExcel(xls: File)
+}
 
-data class TimeReport(
+private val calculator = TimeCalculator()
+private fun TimeSheet.calculateReportData() = calculator.calculate(this)
+
+fun TimeSheet.printCli() {
+    val reportData = calculateReportData()
+    println(reportData.hoursBalanceString)
+}
+
+fun TimeSheet.showNotification() {
+    val reportData = calculateReportData()
+    println("TODO") // TODO implement osascript
+}
+
+
+data class TimeReportData(
+    val sheet: TimeSheet,
     val totalMinutesToWork: Minutes,
     val totalMinutesWorked: Minutes,
 ) {
@@ -21,7 +42,7 @@ data class TimeReport(
     private val hoursBalanceFormatted = hoursFormatter.format(hoursBalance)
     private val absHoursBalanceFormatted = hoursFormatter.format(abs(hoursBalance))
 
-    val hoursBalanceString = when(balanceState) {
+    val hoursBalanceString = when (balanceState) {
         BalanceState.ToLittle -> "In ${"MINUS".colorize} of [$absHoursBalanceFormatted] hours ⚠️"
         BalanceState.Surplus -> "${"SURPLUS".colorize} of [$hoursBalanceFormatted] hours ❤️"
         BalanceState.ExactMatch -> "Exact ${"MATCH".colorize} of working hours 🦄"
@@ -30,15 +51,18 @@ data class TimeReport(
     private val String.colorize: String get() = balanceState.wrap(this)
 }
 
+// CLI
+// =================================================================================
+
 private enum class BalanceState {
     ToLittle {
-        override val wrapColor=PrintSymbols.ANSI_RED
+        override val wrapColor = PrintSymbols.ANSI_RED
     },
     Surplus {
-        override val wrapColor=PrintSymbols.ANSI_GREEN
+        override val wrapColor = PrintSymbols.ANSI_GREEN
     },
     ExactMatch {
-        override val wrapColor=PrintSymbols.ANSI_CYAN
+        override val wrapColor = PrintSymbols.ANSI_CYAN
     };
 
     protected abstract val wrapColor: String

@@ -63,7 +63,7 @@ class BuilderTest : DescribeSpec({
 
             val sheet = timesheet {
                 day(someDate.toParsableDate()) {
-                    "9:30-10" about description tag (TagDso.meet)
+                    "9:30-10" about description tag (BuilderTag.meet)
                 }
             }
 

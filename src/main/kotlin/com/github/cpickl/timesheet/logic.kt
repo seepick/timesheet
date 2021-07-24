@@ -9,7 +9,7 @@ class TimeCalculator(
 ) {
     private val minutesInHour = 60
 
-    fun calculate(sheet: TimeSheet): TimeReport {
+    fun calculate(sheet: TimeSheet): TimeReportData {
         val daysTotal = ChronoUnit.DAYS.between(sheet.startDate, clock.currentLocalDate())
         val daysToWork = 0.rangeTo(daysTotal)
             .map { sheet.startDate.plusDays(it) }
@@ -18,7 +18,8 @@ class TimeCalculator(
         val totalMinutesToWork = (daysToWork * sheet.hoursToWorkPerDay * minutesInHour).toLong()
         val totalMinutesWorked = sheet.entries.workEntries.sumOf { it.duration }
 
-        return TimeReport(
+        return TimeReportData(
+            sheet = sheet,
             totalMinutesToWork = totalMinutesToWork,
             totalMinutesWorked = totalMinutesWorked,
         )

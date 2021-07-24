@@ -11,12 +11,12 @@ timesheet({
     year(2021) {
         month(6) {
             day(1) {
-              "9-10" - "self admin" - orga
-              standup() // enhance DSL with custom extension functions; enjoy the full power of code!
-              "10:30-12:30" - "commons tests" - code
-              "13:30-14:30" - "refine stories" - biz
-              "14:30-16" - "commons tests" - code
-              "16-17" - "story alignment" - meet
+                "9-" - "self admin" - TagDso.orga
+                standup() // enhance DSL with custom extensions, nice :)
+                "-12:30" - "commons tests" - TagDso.code
+                "13:30-" - "refine stories" - TagDso.biz
+                "14:30-" - "commons tests" - TagDso.code
+                "16-17" - "story alignment" - TagDso.meet
             }
         }
     }
@@ -29,42 +29,21 @@ private fun DayDsl.standup() {
 
 ## Setup
 
-1. checkout the code
-1. create a file `src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheet.kt`
-1. add file content:
+When running the `TimesheetApp` it will look for (GIT ignored) file at: `src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheet.kt`
+
+Create it and add the following:
 
 ```kotlin
 package com.github.cpickl.timesheet
 
-import com.github.cpickl.timesheet.IntermediateTag.biz
-
 class MyTimeSheet : TimeSheetProvider {
     override fun provide() = timesheet {
-        day("1.6.21") {
-            "9-5" - "regular shit" - biz
-        }
+        // ... define your times here ...
+    }
+
+    override fun chooseReport(report: ReportContext) {
+        report.printCli()
+//        report.showNotification()
     }
 }
 ```
-
-4. run the main application `TimesheetApp`
-
-# TODO
-
-* [ ] logger
-* [ ] DSL feature:  day("tue 10" )
-* [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
-* [ ] allow day off day ranges: `dayOff("28.1.2021", "3.2.2021")`
-
-## Outlook
-
-* [ ] detailed output (first print balance, then peer week each balance/total balance so far)
-* [ ] use arrow's either for builder validation
-* [ ] multi-user: customizable work entry tags
-* [ ] multi-user: customizable day off reason
-* [ ] auto push messages
-    * every day; via notification popup;
-    * A) create kts kotlin script; execute via cronjob; defines timesheet and invokes kscript dependency (publish to maven local)
-    * B) create assembly and run in background; some evaluate kt file (dynamically load intellij's generated class file?! ;))
-* [ ] overview categories time spent (pie chart)
-* [ ] different Processors (text, excel)
