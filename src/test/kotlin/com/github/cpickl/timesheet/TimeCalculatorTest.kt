@@ -20,10 +20,8 @@ class TimeCalculatorTest : StringSpec() {
                 fullWorkingDay("1.6.21")
             }
 
-            report shouldBe TimeReportData(
-                totalMinutesToWork = (8 * minutesInHour),
-                totalMinutesWorked = (8 * minutesInHour),
-            )
+            report.totalMinutesToWork shouldBe 8 * minutesInHour
+            report.totalMinutesWorked shouldBe 8 * minutesInHour
             report.balance shouldBe 0
         }
 
@@ -34,11 +32,9 @@ class TimeCalculatorTest : StringSpec() {
                 }
             }
 
-            report shouldBe TimeReportData(
-                totalMinutesToWork = (8 * minutesInHour),
-                totalMinutesWorked = (6 * minutesInHour),
-            )
-            report.balance shouldBe (-2 * minutesInHour)
+            report.totalMinutesToWork shouldBe 8 * minutesInHour
+            report.totalMinutesWorked shouldBe 6 * minutesInHour
+            report.balance shouldBe -2 * minutesInHour
         }
 
         "filter weekend" {
@@ -63,10 +59,8 @@ class TimeCalculatorTest : StringSpec() {
                 someDayOff("2.6.21")
             }
 
-            report shouldBe TimeReportData(
-                totalMinutesToWork = (8 * minutesInHour),
-                totalMinutesWorked = (8 * minutesInHour),
-            )
+            report.totalMinutesToWork shouldBe (8 * minutesInHour)
+            report.totalMinutesWorked shouldBe (8 * minutesInHour)
             report.balance shouldBe 0
         }
     }

@@ -24,7 +24,7 @@ internal data class BuilderWorkDayEntry(
         if (about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
     }
 
-    var tag: Tag?
+    var tag: BuilderTag = BuilderTag.none
 
     override fun toString() = "Day[${day.toParsableDate()}/${timeRangeSpec.toParseableString()} - tag: $tag]"
 }
@@ -37,7 +37,18 @@ internal data class BuilderDayOffEntry(
     override fun toString() = "DayOff[${day.toParsableDate()} - reason: $reason]"
 }
 
+enum class BuilderTag(val realTag: Tag) {
+    none(Tag.None),
+    biz(Tag.Business),
+    orga(Tag.Organization),
+    meet(Tag.Meeting),
+    code(Tag.Coding),
+    edu(Tag.Education),
+    scrum(Tag.Scrum),
+    ;
 
+    companion object
+}
 enum class DayOffReasonDso(val realTag: OffTag) {
     Sickness(OffTag.Sick),
     PublicHoliday(OffTag.PublicHoliday),

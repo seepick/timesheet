@@ -85,6 +85,16 @@ data class WorkDayEntry(
 
 }
 
+enum class Tag {
+    None,
+    Business,
+    Coding,
+    Meeting,
+    Organization,
+    Education,
+    Scrum,
+}
+
 interface HasTimeRange {
     val timeRange: TimeRange
 
@@ -139,28 +149,3 @@ enum class OffTag {
     PublicHoliday,
     Vacation,
 }
-
-class Tags {
-    companion object {
-        private val _all: MutableList<Tag> = mutableListOf()
-        val all: List<Tag> = _all
-
-        fun add(tag: Tag) {
-            _all += tag
-        }
-    }
-}
-
-data class Tag(val id: String) {
-    fun register() {
-        Tags.add(this)
-    }
-}
-
-val tagCode = Tag("code").register()
-val Tags.Companion.code get() = tagCode
-
-val tagMeet = Tag("code").register()
-val Tags.Companion.code get() = tagCode
-
-
