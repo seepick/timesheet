@@ -38,7 +38,7 @@ interface TimeSheetDsl {
 }
 
 interface YearDsl {
-    fun month(month: Int, code: YearMonthDsl.() -> Unit)
+    fun month(month: Month, code: YearMonthDsl.() -> Unit)
 }
 
 @TimesheetAppDsl
@@ -185,8 +185,8 @@ private class DslImplementation :
         code()
     }
 
-    override fun month(month: Int, code: YearMonthDsl.() -> Unit) {
-        currentMonth = Month.of(month)
+    override fun month(month: Month, code: YearMonthDsl.() -> Unit) {
+        currentMonth = month
         code()
     }
 

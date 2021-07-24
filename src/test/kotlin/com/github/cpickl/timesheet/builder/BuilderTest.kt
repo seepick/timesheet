@@ -34,6 +34,8 @@ class BuilderTest : DescribeSpec({
     val timeRange1 = TestConstants.timeRange1
     val timeRange2 = TestConstants.timeRange2
     val description = "test description"
+    val anyYear = 2010
+    val anyMonth = Month.JULY
 
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
@@ -133,7 +135,7 @@ class BuilderTest : DescribeSpec({
         it("When add work-day Then set date correctly") {
             timesheet {
                 year(2003) {
-                    month(2) {
+                    month(Month.of(2)) {
                         day(1) {
                             someWorkEntry()
                         }
@@ -142,12 +144,12 @@ class BuilderTest : DescribeSpec({
             } shouldHaveSingleEntryWithDate LocalDate.of(2003, 2, 1)
         }
         it("Given work-day When add day-off Then set date correctly") {
-            val day1 = 11
-            val day2 = 22
+            val day1 = 1
+            val day2 = 2
 
             val sheet = timesheet {
-                year(2003) {
-                    month(2) {
+                year(anyYear) {
+                    month(anyMonth) {
                         day(day1) {
                             someWorkEntry()
                         }
@@ -164,11 +166,13 @@ class BuilderTest : DescribeSpec({
     describe("When ... year-month-day combined with manual-oldschool") {
         it("Given oldschool entry When add newschool entry Then both co-exist") {
             val sheet = timesheet {
+                // oldschool
                 day("1.1.00") {
                     someWorkEntry()
                 }
+                // newschool
                 year(2000) {
-                    month(1) {
+                    month(Month.of(1)) {
                         day(2) {
                             someWorkEntry()
                         }

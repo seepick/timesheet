@@ -6,13 +6,17 @@ Keep track of your working hours by using a comfortable Kotlin DSL. No user inte
 timesheet({
     daysOff += WorkDay.Friday
 }) {
-    day("1.6.21") {
-        "9-10" - "self admin" - orga
-        standup() // enhance DSL with custom extension functions; enjoy the full power of code!
-        "10:30-12:30" - "commons tests" - code
-        "13:30-14:30" - "refine stories" - biz
-        "14:30-16" - "commons tests" - code
-        "16-17" - "story alignment" - meet
+    year(2021) {
+        month(6) {
+            day(1) {
+              "9-10" - "self admin" - orga
+              standup() // enhance DSL with custom extension functions; enjoy the full power of code!
+              "10:30-12:30" - "commons tests" - code
+              "13:30-14:30" - "refine stories" - biz
+              "14:30-16" - "commons tests" - code
+              "16-17" - "story alignment" - meet
+            }
+        }
     }
 }
 
@@ -45,7 +49,7 @@ class MyTimeSheet : TimeSheetProvider {
 
 # TODO
 
-* [ ] DSL feature: month("June") { day("Tue 10" ) }
+* [ ] DSL feature:  day("tue 10" )
 * [ ] continuation time definition; e.g.: "13 coding, 14:30 meeting" (assume gapless time tracking)
 
 ## Outlook
