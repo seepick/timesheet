@@ -21,7 +21,7 @@ class TimeCalculatorTest : StringSpec() {
 
             report.totalMinutesToWork shouldBe 8 * minutesInHour
             report.totalMinutesWorked shouldBe 8 * minutesInHour
-            report.balance shouldBe 0
+            report.balanceInMinutes shouldBe 0
         }
 
         "single incomplete work day" {
@@ -33,7 +33,7 @@ class TimeCalculatorTest : StringSpec() {
 
             report.totalMinutesToWork shouldBe 8 * minutesInHour
             report.totalMinutesWorked shouldBe 6 * minutesInHour
-            report.balance shouldBe -2 * minutesInHour
+            report.balanceInMinutes shouldBe -2 * minutesInHour
         }
 
         "filter weekend" {
@@ -60,7 +60,7 @@ class TimeCalculatorTest : StringSpec() {
 
             report.totalMinutesToWork shouldBe (8 * minutesInHour)
             report.totalMinutesWorked shouldBe (8 * minutesInHour)
-            report.balance shouldBe 0
+            report.balanceInMinutes shouldBe 0
         }
     }
 

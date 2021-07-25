@@ -10,6 +10,7 @@ import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 
 typealias Minutes = Long
+typealias Hours = Double
 
 enum class WorkDay(val allDays: DayOfWeek) {
     Monday(DayOfWeek.MONDAY),
