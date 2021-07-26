@@ -8,19 +8,18 @@ class ReportContext(
     private val reportData: TimeReportData,
 ) {
 
-    fun printCli() {
+    fun printCli() =
         execute(SimpleCliReporter())
-    }
+
     // TODO displays: yesterday's balance, total balance (CLI+NOTIFY)
     // fun printCliDetails() {}
 
-    fun showNotification() {
+    fun showNotification() =
         execute(NotificationReporter())
-    }
-    // fun saveExcel(xls: File)
 
-    private fun execute(reporter: Reporter) {
+    private fun execute(reporter: Reporter): ReportContext {
         reporter.report(reportData)
+        return this
     }
 
 }
