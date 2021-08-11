@@ -17,10 +17,14 @@ import com.github.cpickl.timesheet.someWorkEntry
 import com.github.cpickl.timesheet.someDayOff
 import com.github.cpickl.timesheet.someWorkingDate
 import com.github.cpickl.timesheet.someWorkingDay
+import com.github.cpickl.timesheet.tag1
+import com.github.cpickl.timesheet.tag2
 import com.github.cpickl.timesheet.timesheet
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.time.LocalDate
@@ -38,9 +42,12 @@ class BuilderTest : DescribeSpec({
     val timeRange1 = TestConstants.timeRange1
     val timeRange2 = TestConstants.timeRange2
     val description = "test description"
+    val anyDescription = "any description"
     val anyYear = 2010
     val anyMonth = Month.JULY
     val someTag = Tag.any
+    val tag1 = Tag.tag1
+    val tag2 = Tag.tag2
     val someOffReason = OffReason.any
 
     describe("When sunshine case") {
@@ -77,10 +84,21 @@ class BuilderTest : DescribeSpec({
                     WorkDayEntry(
                         dateRange = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),
                         about = description,
-                        tag = someTag,
+                        tags = setOf(someTag),
                     )
                 )
             )
+        }
+        it("two tags Then parsed tags returned") {
+            val sheet = timesheet {
+                someWorkingDate {
+                    anyTimeRangeString - anyDescription - listOf(tag1, tag2)
+                    // anyTimeRangeString.about(anyDescription).tags(tag1, tag2)
+                }
+            }
+
+            sheet.entries.workEntries shouldHaveSize 1
+            sheet.entries.workEntries[0].tags shouldContainExactly setOf(tag1, tag2)
         }
         it("day off") {
             val sheet = timesheet {

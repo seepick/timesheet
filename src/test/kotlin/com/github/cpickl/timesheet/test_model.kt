@@ -2,16 +2,22 @@ package com.github.cpickl.timesheet
 
 import com.github.cpickl.timesheet.builder.OffReasons
 import com.github.cpickl.timesheet.builder.Tags
-import com.github.cpickl.timesheet.builder.WorkDayDsl
 
-object AnyTag : Tag {
-    override val label = "anyTag"
-}
+open class TestableTag(
+    override val label: String
+) : Tag
+
+object AnyTag : TestableTag("anyTag")
+object Tag1 : TestableTag("tag1")
+object Tag2 : TestableTag("tag2")
+
 object AnyOffReason : OffReason {
     override val label = "anyOffReason"
 }
 
 val Tag.Companion.any get() = AnyTag
+val Tag.Companion.tag1 get() = Tag1
+val Tag.Companion.tag2 get() = Tag2
 
 val OffReason.Companion.any get() = AnyOffReason
 

@@ -77,7 +77,7 @@ interface TimeEntryFields {
 data class WorkDayEntry(
     val dateRange: EntryDateRange,
     val about: String,
-    val tag: Tag,
+    val tags: Set<Tag>,
 ) : TimeEntry(), HasTimeRange by dateRange {
 
     val duration: Minutes = dateRange.duration
@@ -88,13 +88,7 @@ data class WorkDayEntry(
 interface Tag {
     val label: String
 
-    companion object {
-        val noTag = NoTag
-    }
-}
-
-object NoTag : Tag {
-    override val label = ""
+    companion object;
 }
 
 class NamedTag(

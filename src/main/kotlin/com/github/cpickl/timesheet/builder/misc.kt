@@ -24,9 +24,9 @@ internal data class BuilderWorkDayEntry(
         if (about.isBlank()) throw BuilderException("An entry's about text must not be blank for entry ${day.toParsableDate()}!")
     }
 
-    var tag: Tag? = null
+    val tags: MutableSet<Tag> = mutableSetOf()
 
-    override fun toString() = "Day[${day.toParsableDate()}/${timeRangeSpec.toParseableString()} - tag: $tag]"
+    override fun toString() = "Day[${day.toParsableDate()}/${timeRangeSpec.toParseableString()} - tags: $tags]"
 }
 
 internal data class BuilderDayOffEntry(
