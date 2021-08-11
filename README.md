@@ -11,7 +11,7 @@ Keep track of your working hours with an elegant **Kotlin DSL**.
 // ====================================================================================================================
 
 fun main() {
-    timesheet(context(DemoTags, DemoOffReasons) {
+    timesheet(DemoTags, DemoOffReasons, {
         daysOff += WorkDay.Friday
     }) {
         year(2021) {
@@ -65,7 +65,7 @@ Your (GIT ignored) file should contain the following to enagble integration:
 
 ```kotlin
 class MyAutoSheet : AutoSheet {
-    override fun provide() = timesheet(context(DemoTags, DemoOffReasons)) {
+    override fun provide() = timesheet(DemoTags, DemoOffReasons) {
         // ... define your times here ...
     }
 

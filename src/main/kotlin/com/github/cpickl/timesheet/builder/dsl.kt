@@ -22,19 +22,19 @@ interface OffReasons {
     companion object
 }
 
-fun <TAGS : Tags, OFF : OffReasons> context(
-    tags: TAGS,
-    offs: OFF,
-    init: TimeSheetInitDsl.() -> Unit = {}
-) = TimeSheetContext(tags, offs, init)
-
-class TimeSheetContext<TAGS : Tags, OFF : OffReasons>(
+internal class TimeSheetContext<TAGS : Tags, OFF : OffReasons>(
     val tags: TAGS,
     val offs: OFF,
     val init: TimeSheetInitDsl.() -> Unit = {}
 )
 
-fun <TAGS : Tags, OFF : OffReasons> timesheet(context: TimeSheetContext<TAGS, OFF>, entryCode: TimeSheetDsl.() -> Unit): TimeSheet {
+fun <TAGS : Tags, OFF : OffReasons> timesheet(
+    tags: TAGS,
+    offs: OFF,
+    init: TimeSheetInitDsl.() -> Unit = {},
+    entryCode: TimeSheetDsl.() -> Unit
+): TimeSheet {
+    val context = TimeSheetContext(tags, offs, init)
     val dsl = DslImplementation(context)
     context.init(dsl)
     dsl.entryCode()

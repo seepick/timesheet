@@ -4,14 +4,13 @@ import com.github.cpickl.timesheet.builder.OffReasons
 import com.github.cpickl.timesheet.builder.Tags
 import com.github.cpickl.timesheet.builder.TimeSheetDsl
 import com.github.cpickl.timesheet.builder.TimeSheetInitDsl
-import com.github.cpickl.timesheet.builder.context
 import com.github.cpickl.timesheet.builder.timesheet
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 fun timesheet(init: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
-    timesheet(context = context(Tags.any, OffReasons.any, init), entryCode)
+    timesheet(Tags.any, OffReasons.any, init, entryCode)
 
 object TestConstants {
     val someDate = LocalDate.of(2003, 2, 1)

@@ -8,14 +8,13 @@ import com.github.cpickl.timesheet.DemoTags.orga
 import com.github.cpickl.timesheet.builder.OffReasons
 import com.github.cpickl.timesheet.builder.WorkDayDsl
 import com.github.cpickl.timesheet.builder.Tags
-import com.github.cpickl.timesheet.builder.context
 import com.github.cpickl.timesheet.builder.timesheet
 import java.time.Month
 
 // 1. a sample day
 // ====================================================================================================================
 fun main() {
-    timesheet(context(DemoTags, DemoOffReasons) {
+    timesheet(DemoTags, DemoOffReasons, {
         daysOff += WorkDay.Friday
     }) {
         year(2021) {
@@ -61,7 +60,7 @@ private fun WorkDayDsl.standup() {
 // (3. hook into main app)
 // ====================================================================================================================
 class MyAutoSheet : AutoSheet {
-    override fun provide() = timesheet(context(DemoTags, DemoOffReasons)) {
+    override fun provide() = timesheet(DemoTags, DemoOffReasons) {
         // ... define your times here ...
     }
 
