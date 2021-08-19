@@ -5,18 +5,21 @@ package com.github.cpickl.timesheet.builder
 import com.github.cpickl.timesheet.OffReason
 import com.github.cpickl.timesheet.Tag
 import java.time.LocalDate
+import java.time.Month
 
 /** Construction of model because of invalid DSL definition failed. */
 class BuilderException(message: String, cause: Exception? = null) : Exception(message, cause)
 
 interface BuilderEntryFields {
-    val day: LocalDate
+//    val day: LocalDate
 }
 
-internal sealed class BuilderEntry : BuilderEntryFields
+internal sealed class BuilderEntry : BuilderEntryFields {
+    abstract fun matches(date: LocalDate): Boolean
+}
 
 internal data class BuilderWorkDayEntry(
-    override val day: LocalDate,
+    val day: LocalDate,
     val timeRangeSpec: TimeRangeSpec,
     val about: String,
 ) : BuilderEntry() {
@@ -26,13 +29,33 @@ internal data class BuilderWorkDayEntry(
 
     val tags: MutableSet<Tag> = mutableSetOf()
 
+    override fun matches(date: LocalDate) = day == date
     override fun toString() = "Day[${day.toParsableDate()}/${timeRangeSpec.toParseableString()} - tags: $tags]"
 }
 
-internal data class BuilderDayOffEntry(
-    override val day: LocalDate,
-) : BuilderEntry() {
-    var reason: OffReason? = null
+interface ReasonableOffEntry {
+    var reason: OffReason?
+}
 
-    override fun toString() = "DayOff[${day.toParsableDate()} - reason: $reason]"
+internal data class BuilderDayOffEntry(
+    val day: LocalDate,
+) : BuilderEntry(), ReasonableOffEntry {
+    override var reason: OffReason? = null
+
+    override fun matches(date: LocalDate) = day == date
+    override fun toString() = "${this::class.simpleName}[${day.toParsableDate()} - reason: $reason]"
+}
+
+internal data class BuilderDaysOffEntry(
+    val year: Int,
+    val month: Month,
+    val days: IntRange,
+): BuilderEntry(), ReasonableOffEntry {
+    override var reason: OffReason? = null
+    val dates = days.map {  day ->
+        LocalDate.of(year, month, day)
+    }
+
+    override fun matches(date: LocalDate) = dates.any { it == date }
+    override fun toString() = "${this::class.simpleName}[$days - reason: $reason]"
 }

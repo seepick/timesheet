@@ -11,6 +11,7 @@ import com.github.cpickl.timesheet.TimeRange
 import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDay
 import com.github.cpickl.timesheet.WorkDayEntry
+import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.Month
 
@@ -25,12 +26,12 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private val entries = mutableListOf<BuilderEntry>()
     private lateinit var currentDay: LocalDate
     private lateinit var currentEntry: BuilderEntry
+    private var currentYear = -1 // Int not possible to do lateinit :-/
+    private lateinit var currentMonth: Month
 
     // MAIN TIMESHEET DSL
     // ================================================================================================
 
-    private var currentYear = -1
-    private lateinit var currentMonth: Month
 
     override fun year(year: Int, code: YearDsl.() -> Unit) {
         currentYear = year
@@ -46,29 +47,45 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         _day(dateByCurrentSetYearAndMonth(day), code)
     }
 
+    private fun dateByCurrentSetYearAndMonth(day: Int) =
+        LocalDate.of(currentYear, currentMonth, day)
+
+    // DAY OFF DSL
+    // ================================================================================================
+
     override fun dayOff(day: Int): DayOffDsl =
         _dayOff(dateByCurrentSetYearAndMonth(day))
 
-    private fun dateByCurrentSetYearAndMonth(day: Int) =
-        LocalDate.of(currentYear, currentMonth, day)
+    override fun daysOff(days: IntRange): DayOffDsl {
+        currentEntry = BuilderDaysOffEntry(currentYear, currentMonth, days)
+        entries += currentEntry
+        return this
+    }
+
+    override fun DayOffDsl.becauseOf(reason: OffReason) {
+        val entry = currentEntry as? ReasonableOffEntry ?: throw IllegalStateException("Expected entry to be reasonable, but was: $currentEntry")
+        if (!context.offs.contains(reason)) {
+            // FIXME test whether contains off reason
+        }
+        entry.reason = reason
+    }
+
+    private fun _dayOff(newDate: LocalDate): DayOffDsl {
+        currentDay = newDate // TODO needed to set?!
+        currentEntry = BuilderDayOffEntry(currentDay)
+        entries += currentEntry
+        return this
+    }
 
     // INTERNALS
     // ================================================================================================
 
     private fun _day(newDate: LocalDate, code: WorkDayDsl.() -> Unit) {
-        currentDay = newDate
-        if (entries.any { it.day == currentDay }) {
+        if (entries.any { it.matches(newDate) }) {
             throw BuilderException("Duplicate date entries: ${newDate.toParsableDate()}")
         }
-
-        code()
-    }
-
-    private fun _dayOff(newDate: LocalDate): DayOffDsl {
         currentDay = newDate
-        currentEntry = BuilderDayOffEntry(currentDay)
-        entries += currentEntry
-        return this
+        code()
     }
 
     override fun day(date: String, code: WorkDayDsl.() -> Unit) {
@@ -116,17 +133,6 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     override fun minus(tags: List<Tag>)  = addTags(tags)
 
 
-    // DAY OFF DSL
-    // ================================================================================================
-
-    override fun DayOffDsl.becauseOf(reason: OffReason) {
-        val entry = currentEntry as BuilderDayOffEntry
-        if (!context.offs.contains(reason)) {
-            // FIXME test whether contains off reason
-        }
-        entry.reason = reason
-    }
-
     // BUILD
     // ================================================================================================
 
@@ -134,7 +140,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         val realEntries = try {
             TimeEntries.newValidatedOrThrow(entries.mapIndexed { i, entry ->
                 entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
-            })
+            }.flatten())
         } catch (e: InputValidationException) {
             throw BuilderException("Invalid timesheet defined: ${e.message}", e)
         }
@@ -147,19 +153,25 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     // ENTRY TRANSFORMATION
     // -------------------------------------------------------
 
-    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): TimeEntry = when (this) {
-        is BuilderWorkDayEntry -> WorkDayEntry(
+    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): List<TimeEntry> = when (this) {
+        is BuilderWorkDayEntry -> listOf(WorkDayEntry(
             dateRange = EntryDateRange(
                 day = day,
                 timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
             ),
             about = about,
             tags = tags
-        )
-        is BuilderDayOffEntry -> DayOffEntry(
+        ))
+        is BuilderDayOffEntry -> listOf(DayOffEntry(
             day = day,
             reason = reason ?: throw BuilderException("no day off reason was given for: $this")
-        )
+        ))
+        is BuilderDaysOffEntry -> this.dates.map {
+            DayOffEntry(
+                day = it,
+                reason = reason ?: throw BuilderException("no day off reason was given for: $this")
+            )
+        }
     }
 
     private fun transformTimeRange(timeRangeSpec: TimeRangeSpec, neighbours: Pair<BuilderEntry?, BuilderEntry?>, day: LocalDate): TimeRange =

@@ -70,6 +70,7 @@ interface YearDsl {
 interface YearMonthDsl {
     fun day(day: Int, code: WorkDayDsl.() -> Unit)
     fun dayOff(day: Int): DayOffDsl
+    fun daysOff(days: IntRange): DayOffDsl
 
     // necessary duplicate
     infix fun DayOffDsl.becauseOf(reason: OffReason)

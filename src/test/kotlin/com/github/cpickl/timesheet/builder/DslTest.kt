@@ -27,6 +27,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
@@ -251,6 +252,24 @@ class BuilderTest : DescribeSpec({
             exception.message shouldContain "1:00"
             exception.message shouldContain "1.2.03"
         }
-        // TODO overlaps
+        // TODO test overlaps
+    }
+    describe("days off") {
+        it("range") {
+            val sheet = timesheet {
+                year(2000) {
+                    month(Month.JULY) {
+                        someWorkingDay(1)
+                        daysOff(2..3) becauseOf OffReason.any
+                    }
+                }
+            }
+
+            sheet.entries shouldHaveSize 3
+            sheet.entries[1].shouldBeInstanceOf<DayOffEntry>()
+            sheet.entries[2].shouldBeInstanceOf<DayOffEntry>()
+            sheet.entries[1].day shouldBe LocalDate.of(2000, Month.JULY, 2)
+            sheet.entries[2].day shouldBe LocalDate.of(2000, Month.JULY, 3)
+        }
     }
 })
