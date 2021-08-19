@@ -44,7 +44,13 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     }
 
     override fun day(day: Int, code: WorkDayDsl.() -> Unit) {
-        _day(dateByCurrentSetYearAndMonth(day), code)
+        val newDate = dateByCurrentSetYearAndMonth(day)
+        if (entries.any { it.matches(newDate) }) {
+            throw BuilderException("Duplicate date entries: ${newDate.toParsableDate()}")
+        }
+        currentDay = newDate
+        code()
+
     }
 
     private fun dateByCurrentSetYearAndMonth(day: Int) =
@@ -76,24 +82,6 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         entries += currentEntry
         return this
     }
-
-    // INTERNALS
-    // ================================================================================================
-
-    private fun _day(newDate: LocalDate, code: WorkDayDsl.() -> Unit) {
-        if (entries.any { it.matches(newDate) }) {
-            throw BuilderException("Duplicate date entries: ${newDate.toParsableDate()}")
-        }
-        currentDay = newDate
-        code()
-    }
-
-    override fun day(date: String, code: WorkDayDsl.() -> Unit) {
-        _day(date.parseDate(), code)
-    }
-
-    override fun dayOff(date: String): DayOffDsl =
-        _dayOff(date.parseDate())
 
     // DAY DSL
     // ================================================================================================

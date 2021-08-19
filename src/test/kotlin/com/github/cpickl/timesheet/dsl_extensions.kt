@@ -3,15 +3,46 @@ package com.github.cpickl.timesheet
 import com.github.cpickl.timesheet.builder.TimeSheetDsl
 import com.github.cpickl.timesheet.builder.WorkDayDsl
 import com.github.cpickl.timesheet.builder.YearMonthDsl
-import com.github.cpickl.timesheet.builder.toParsableDate
 import java.time.LocalDate
+import java.time.Month
 
-fun TimeSheetDsl.someDayOff(date: String = "1.1.21") {
-    dayOff(date) becauseOf OffReason.any
+private val anyYear = 2000
+private val anyMonth = Month.JANUARY
+
+fun TimeSheetDsl.anyYearMonth(code: YearMonthDsl.() -> Unit) {
+    year(anyYear) {
+        month(anyMonth, code)
+    }
 }
 
-fun TimeSheetDsl.someWorkingDate(date: LocalDate = TestConstants.someDate, dayDsl: WorkDayDsl.() -> Unit = { someWorkEntry() }) {
-    someWorkingDay(date.toParsableDate(), dayDsl)
+fun TimeSheetDsl.dayOff(date: LocalDate = TestConstants.someDate, reason: OffReason) {
+    year(date.year) {
+        month(date.month) {
+            dayOff(date.dayOfMonth) becauseOf reason
+        }
+    }
+}
+
+fun TimeSheetDsl.anyWorkingDay() = someWorkingDay()
+
+fun TimeSheetDsl.someWorkingDay(date: LocalDate = TestConstants.someDate, dayDsl: WorkDayDsl.() -> Unit = { someWorkEntry() }) {
+    year(date.year) {
+        month(date.month) {
+            day(date.dayOfMonth) {
+                dayDsl()
+            }
+        }
+    }
+}
+
+fun TimeSheetDsl.anyDayOff() = someDayOff()
+
+fun TimeSheetDsl.someDayOff(date: LocalDate = TestConstants.someDate) {
+    year(date.year) {
+        month(date.month) {
+            dayOff(date.dayOfMonth) becauseOf OffReason.any
+        }
+    }
 }
 
 fun YearMonthDsl.someWorkingDay(day: Int) {
@@ -20,29 +51,12 @@ fun YearMonthDsl.someWorkingDay(day: Int) {
     }
 }
 
-@Deprecated(message = "Use year/month/day approach instead")
-fun TimeSheetDsl.someWorkingDay(date: String = "1.1.21", dayDsl: WorkDayDsl.() -> Unit = { someWorkEntry() }) {
-//    year(2021) {
-//        month(8) {
-//            day()
-//        }
-//    }
-    day(date) {
-        dayDsl()
-    }
-}
 
 fun WorkDayDsl.someWorkEntry(timeRange: String = someTimeRange, about: String = "some about") {
     timeRange about about
 }
 
 val WorkDayDsl.someTimeRange: String get() = "10-11"
-
-fun TimeSheetDsl.fullWorkingDay(date: String) {
-    day(date) {
-        "10-18" about "any"
-    }
-}
 
 fun YearMonthDsl.someDayOff(day: Int) {
     dayOff(day) becauseOf OffReason.any

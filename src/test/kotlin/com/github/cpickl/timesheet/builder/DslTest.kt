@@ -7,20 +7,19 @@ import com.github.cpickl.timesheet.Tag
 import com.github.cpickl.timesheet.TestConstants
 import com.github.cpickl.timesheet.TimeEntries
 import com.github.cpickl.timesheet.TimeRange
-import com.github.cpickl.timesheet.TimeSheet
 import com.github.cpickl.timesheet.WorkDayEntry
 import com.github.cpickl.timesheet.until
 import com.github.cpickl.timesheet.any
+import com.github.cpickl.timesheet.anyWorkingDay
+import com.github.cpickl.timesheet.dayOff
 import com.github.cpickl.timesheet.failingTimesheet
 import com.github.cpickl.timesheet.shouldHaveSingleEntryWithDate
 import com.github.cpickl.timesheet.someWorkEntry
 import com.github.cpickl.timesheet.someDayOff
-import com.github.cpickl.timesheet.someWorkingDate
 import com.github.cpickl.timesheet.someWorkingDay
 import com.github.cpickl.timesheet.tag1
 import com.github.cpickl.timesheet.tag2
 import com.github.cpickl.timesheet.timesheet
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
@@ -54,7 +53,7 @@ class BuilderTest : DescribeSpec({
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
             val sheet = timesheet {
-                someWorkingDate(someDate) {
+                someWorkingDay(someDate) {
                     someWorkEntry()
                 }
             }
@@ -63,7 +62,7 @@ class BuilderTest : DescribeSpec({
         }
         it("two valid working days Then two entries returned") {
             val sheet = timesheet {
-                someWorkingDate {
+                someWorkingDay {
                     someWorkEntry(timeRange = timeRange1.toParseableString())
                     someWorkEntry(timeRange = timeRange2.toParseableString())
                 }
@@ -75,7 +74,7 @@ class BuilderTest : DescribeSpec({
             val timeEnd = LocalTime.of(10, 0)
 
             val sheet = timesheet {
-                day(someDate.toParsableDate()) {
+                someWorkingDay(someDate) {
                     "9:30-10" about description tag (someTag)
                 }
             }
@@ -92,7 +91,7 @@ class BuilderTest : DescribeSpec({
         }
         it("two tags Then parsed tags returned") {
             val sheet = timesheet {
-                someWorkingDate {
+                someWorkingDay {
                     anyTimeRangeString - anyDescription - listOf(tag1, tag2)
                     // anyTimeRangeString.about(anyDescription).tags(tag1, tag2)
                 }
@@ -103,8 +102,8 @@ class BuilderTest : DescribeSpec({
         }
         it("day off") {
             val sheet = timesheet {
-                someWorkingDate(date1)
-                dayOff(date2.toParsableDate()) becauseOf someOffReason
+                anyWorkingDay()
+                dayOff(date2, someOffReason)
             }
 
             sheet.entries shouldContain DayOffEntry(
@@ -124,23 +123,27 @@ class BuilderTest : DescribeSpec({
         }
         it("Given some work day When day-off without reason entry") {
             failingTimesheet {
-                someWorkingDay()
-                dayOff("1.1.00") // missing: becauseOf tag
+                anyWorkingDay()
+                year(anyYear) {
+                    month(anyMonth) {
+                        dayOff(1) // missing: becauseOf reason
+                    }
+                }
             }
         }
         it("two work days with same date") {
+            val conflictingDate = TestConstants.someDate
             failingTimesheet {
-                val conflictingDate = "1.1.21"
                 someWorkingDay(date = conflictingDate)
                 someWorkingDay(date = conflictingDate)
 
-            }.message shouldContain "1.1.21"
+            }.message shouldContain conflictingDate.year.toString().substring(2) shouldContain conflictingDate.monthValue.toString() shouldContain conflictingDate.dayOfMonth.toString()
         }
         // TODO two day offs with same date
         // TODO 1 work day 1 day off; same date
         it("work entry without about") {
             failingTimesheet {
-                someWorkingDate(someDate) {
+                someWorkingDay(someDate) {
                     anyTimeRangeString about " "
                 }
             }.message shouldContain someDate.toParsableDate()
@@ -148,7 +151,7 @@ class BuilderTest : DescribeSpec({
         // TODO test 2 days off at same date
         it("two work entries with same time") {
             failingTimesheet {
-                someWorkingDate(someDate) {
+                someWorkingDay(someDate) {
                     someWorkEntry(timeRange = someTimeRangeString)
                     someWorkEntry(timeRange = someTimeRangeString)
                 }
@@ -188,33 +191,10 @@ class BuilderTest : DescribeSpec({
         }
     }
 
-    describe("When ... year-month-day combined with manual-oldschool") {
-        it("Given oldschool entry When add newschool entry Then both co-exist") {
-            val sheet = timesheet {
-                // oldschool
-                day("1.1.00") {
-                    someWorkEntry()
-                }
-                // newschool
-                year(2000) {
-                    month(Month.of(1)) {
-                        day(2) {
-                            someWorkEntry()
-                        }
-                    }
-                }
-            }
-
-            sheet.entries.size shouldBe 2
-            sheet.entries.first().day shouldBe LocalDate.of(2000, 1, 1)
-            sheet.entries.last().day shouldBe LocalDate.of(2000, 1, 2)
-        }
-    }
-
     describe("When ... partial time range") {
         it("open end success") {
             val sheet = timesheet {
-                someWorkingDate {
+                someWorkingDay {
                     "0-" - "open end entry"
                     "1-2" - "last entry"
                 }
@@ -225,7 +205,7 @@ class BuilderTest : DescribeSpec({
         }
         it("open begin success") {
             val sheet = timesheet {
-                someWorkingDate {
+                someWorkingDay {
                     "0-1" - "first entry"
                     "-2" - "open begin entry"
                 }
@@ -236,7 +216,7 @@ class BuilderTest : DescribeSpec({
         }
         it("single open end fail") {
             val exception = failingTimesheet {
-                someWorkingDay("1.2.03") {
+                someWorkingDay(LocalDate.of(2003, 2, 1)) {
                     "0-" - "open end entry"
                 }
             }
@@ -245,7 +225,7 @@ class BuilderTest : DescribeSpec({
         }
         it("single end end fail") {
             val exception = failingTimesheet {
-                someWorkingDay("1.2.03") {
+                someWorkingDay(LocalDate.of(2003, 2, 1)) {
                     "-1" - "open begin entry"
                 }
             }

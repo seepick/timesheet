@@ -51,12 +51,6 @@ interface TimeSheetInitDsl {
 
 @TimesheetAppDsl
 interface TimeSheetDsl {
-    @Deprecated(message = "year(2000) { month(1) { day(2) } }")
-    fun day(date: String, code: WorkDayDsl.() -> Unit)
-
-    @Deprecated(message = "year(2000) { month(1) { day(2) } }")
-    fun dayOff(date: String): DayOffDsl
-
     fun year(year: Int, code: YearDsl.() -> Unit)
 
     infix fun DayOffDsl.becauseOf(reason: OffReason)

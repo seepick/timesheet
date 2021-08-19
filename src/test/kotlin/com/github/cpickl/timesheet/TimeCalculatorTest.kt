@@ -6,9 +6,11 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Month
 
 class TimeCalculatorTest : StringSpec() {
 
+    private val anyDay = 1
     private val minutesInHour = 60L
     private val workHoursPerDay = 8L
     private val workMinutesPerDay = workHoursPerDay * minutesInHour
@@ -16,7 +18,13 @@ class TimeCalculatorTest : StringSpec() {
     init {
         "single complete work day" {
             val report = calculate("1.6.21") {
-                fullWorkingDay("1.6.21")
+                year(2021) {
+                    month(Month.JUNE) {
+                        day(1) {
+                            "10-18" about "any"
+                        }
+                    }
+                }
             }
 
             report.totalMinutesToWork shouldBe 8 * minutesInHour
@@ -25,9 +33,13 @@ class TimeCalculatorTest : StringSpec() {
         }
 
         "single incomplete work day" {
-            val report = calculate("1.6.21") {
-                day("1.6.21") {
-                    "10-16" about "any"
+            val report = calculate(today = "1.2.21") {
+                year(2021) {
+                    month(Month.FEBRUARY) {
+                        day(1) {
+                            "10-16" about "any"
+                        }
+                    }
                 }
             }
 
@@ -38,7 +50,13 @@ class TimeCalculatorTest : StringSpec() {
 
         "filter weekend" {
             val report = calculate("5.6.21") {
-                fullWorkingDay("4.6.21")
+                year(2021) {
+                    month(Month.JUNE) {
+                        day(4) {
+                            "10-18" - "any"
+                        }
+                    }
+                }
             }
 
             report.totalMinutesToWork shouldBe workMinutesPerDay
@@ -46,7 +64,13 @@ class TimeCalculatorTest : StringSpec() {
 
         "filter free day" {
             val report = calculate("2.6.21", { daysOff += WorkDay.Wednesday }) {
-                fullWorkingDay("1.6.21")
+                year(2021) {
+                    month(Month.JUNE) {
+                        day(1) {
+                            "10-18" - "any"
+                        }
+                    }
+                }
             }
 
             report.totalMinutesToWork shouldBe workMinutesPerDay
@@ -54,8 +78,14 @@ class TimeCalculatorTest : StringSpec() {
 
         "filter day off" {
             val report = calculate("2.6.21") {
-                fullWorkingDay("1.6.21")
-                someDayOff("2.6.21")
+                year(2021) {
+                    month(Month.JUNE) {
+                        day(1) {
+                            "10-18" - "any"
+                        }
+                        someDayOff(2)
+                    }
+                }
             }
 
             report.totalMinutesToWork shouldBe (8 * minutesInHour)
@@ -74,3 +104,4 @@ class TimeCalculatorTest : StringSpec() {
         return clock
     }
 }
+
