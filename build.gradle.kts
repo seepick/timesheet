@@ -26,6 +26,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     }
 }
 
-val test by tasks.getting(Test::class) {
-    useJUnitPlatform { }
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
