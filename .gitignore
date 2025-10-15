@@ -2,3 +2,5 @@
 /build/
 /.idea/
 /src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheetApp.kt
+
+.DS_Store
