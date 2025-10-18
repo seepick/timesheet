@@ -7,6 +7,20 @@ Keep track of your working hours with an elegant **Kotlin DSL**.
 # Usage
 
 ```kotlin
+import DemoTags.biz
+import DemoTags.code
+import DemoTags.meet
+import DemoTags.orga
+import com.github.cpickl.timesheet.NamedOffReason
+import com.github.cpickl.timesheet.NamedTag
+import com.github.cpickl.timesheet.WorkDay
+import com.github.cpickl.timesheet.builder.OffReasons
+import com.github.cpickl.timesheet.builder.Tags
+import com.github.cpickl.timesheet.builder.WorkDayDsl
+import com.github.cpickl.timesheet.builder.timesheet
+import com.github.cpickl.timesheet.calculate
+import java.time.Month
+
 // a sample day
 // ====================================================================================================================
 
@@ -55,11 +69,13 @@ private fun WorkDayDsl.standup() {
 }
 ```
 
-Simply create a (already GIT ignored) file at `src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheetApp.kt` and fill it with that content.
+Simply create a (already GIT ignored) file at `src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheetApp.kt` and fill
+it with that content.
 
 ## Auto
 
-When running the `TimesheetApp` (via gradle from a cronjob) it will look for class named `com.github.cpickl.timesheet.MyAutoSheet` to hook it in.
+When running the `TimesheetApp` (via gradle from a cronjob) it will look for class named
+`com.github.cpickl.timesheet.MyAutoSheet` to hook it in.
 
 Your (GIT ignored) file should contain the following to enagble integration:
 
