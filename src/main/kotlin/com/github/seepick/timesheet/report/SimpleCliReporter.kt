@@ -1,10 +1,4 @@
-package com.github.cpickl.timesheet.report
-
-import com.github.cpickl.timesheet.BalanceState
-import com.github.cpickl.timesheet.Reporter
-import com.github.cpickl.timesheet.TimeReportData
-import java.text.DecimalFormat
-import kotlin.math.abs
+package com.github.seepick.timesheet.report
 
 class SimpleCliReporter : Reporter {
     override fun report(data: TimeReportData) {
