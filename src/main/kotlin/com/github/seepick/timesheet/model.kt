@@ -1,9 +1,9 @@
 @file:JvmName("Model")
 
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.toParsableDate
-import com.github.cpickl.timesheet.builder.toParseableString
+import com.github.seepick.timesheet.builder.toParsableDate
+import com.github.seepick.timesheet.builder.toParseableString
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime

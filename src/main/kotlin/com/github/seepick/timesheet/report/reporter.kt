@@ -1,7 +1,9 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet.report
 
-import com.github.cpickl.timesheet.report.NotificationReporter
-import com.github.cpickl.timesheet.report.SimpleCliReporter
+import com.github.seepick.timesheet.Hours
+import com.github.seepick.timesheet.Minutes
+import com.github.seepick.timesheet.TimeCalculator
+import com.github.seepick.timesheet.TimeSheet
 
 class ReportContext(
     private val sheet: TimeSheet,
@@ -10,12 +12,6 @@ class ReportContext(
 
     fun printCli() =
         execute(SimpleCliReporter())
-
-    // TODO displays: yesterday's balance, total balance (CLI+NOTIFY)
-    // fun printCliDetails() {}
-
-    fun showNotification() =
-        execute(NotificationReporter())
 
     private fun execute(reporter: Reporter): ReportContext {
         reporter.report(reportData)

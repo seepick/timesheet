@@ -1,6 +1,6 @@
 @file:JvmName("Lang")
 
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
 import java.time.DayOfWeek
 

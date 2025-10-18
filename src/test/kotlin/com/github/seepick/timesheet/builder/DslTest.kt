@@ -1,25 +1,25 @@
-package com.github.cpickl.timesheet.builder
+package com.github.seepick.timesheet.builder
 
-import com.github.cpickl.timesheet.DayOffEntry
-import com.github.cpickl.timesheet.EntryDateRange
-import com.github.cpickl.timesheet.OffReason
-import com.github.cpickl.timesheet.Tag
-import com.github.cpickl.timesheet.TestConstants
-import com.github.cpickl.timesheet.TimeEntries
-import com.github.cpickl.timesheet.TimeRange
-import com.github.cpickl.timesheet.WorkDayEntry
-import com.github.cpickl.timesheet.until
-import com.github.cpickl.timesheet.any
-import com.github.cpickl.timesheet.anyWorkingDay
-import com.github.cpickl.timesheet.dayOff
-import com.github.cpickl.timesheet.failingTimesheet
-import com.github.cpickl.timesheet.shouldHaveSingleEntryWithDate
-import com.github.cpickl.timesheet.someWorkEntry
-import com.github.cpickl.timesheet.someDayOff
-import com.github.cpickl.timesheet.someWorkingDay
-import com.github.cpickl.timesheet.tag1
-import com.github.cpickl.timesheet.tag2
-import com.github.cpickl.timesheet.timesheet
+import com.github.seepick.timesheet.DayOffEntry
+import com.github.seepick.timesheet.EntryDateRange
+import com.github.seepick.timesheet.OffReason
+import com.github.seepick.timesheet.Tag
+import com.github.seepick.timesheet.TestConstants
+import com.github.seepick.timesheet.TimeEntries
+import com.github.seepick.timesheet.TimeRange
+import com.github.seepick.timesheet.WorkDayEntry
+import com.github.seepick.timesheet.until
+import com.github.seepick.timesheet.any
+import com.github.seepick.timesheet.anyWorkingDay
+import com.github.seepick.timesheet.dayOff
+import com.github.seepick.timesheet.failingTimesheet
+import com.github.seepick.timesheet.shouldHaveSingleEntryWithDate
+import com.github.seepick.timesheet.someWorkEntry
+import com.github.seepick.timesheet.someDayOff
+import com.github.seepick.timesheet.someWorkingDay
+import com.github.seepick.timesheet.tag1
+import com.github.seepick.timesheet.tag2
+import com.github.seepick.timesheet.timesheetAny
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
@@ -52,7 +52,7 @@ class BuilderTest : DescribeSpec({
 
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 someWorkingDay(someDate) {
                     someWorkEntry()
                 }
@@ -61,7 +61,7 @@ class BuilderTest : DescribeSpec({
             sheet.startDate shouldBe someDate
         }
         it("two valid working days Then two entries returned") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 someWorkingDay {
                     someWorkEntry(timeRange = timeRange1.toParseableString())
                     someWorkEntry(timeRange = timeRange2.toParseableString())
@@ -73,7 +73,7 @@ class BuilderTest : DescribeSpec({
             val timeStart = LocalTime.of(9, 30)
             val timeEnd = LocalTime.of(10, 0)
 
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 someWorkingDay(someDate) {
                     "9:30-10" about description tag (someTag)
                 }
@@ -90,7 +90,7 @@ class BuilderTest : DescribeSpec({
             )
         }
         it("two tags Then parsed tags returned") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 someWorkingDay {
                     anyTimeRangeString - anyDescription - listOf(tag1, tag2)
                     // anyTimeRangeString.about(anyDescription).tags(tag1, tag2)
@@ -101,7 +101,7 @@ class BuilderTest : DescribeSpec({
             sheet.entries.workEntries[0].tags shouldContainExactly setOf(tag1, tag2)
         }
         it("day off") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 anyWorkingDay()
                 dayOff(date2, someOffReason)
             }
@@ -161,7 +161,7 @@ class BuilderTest : DescribeSpec({
 
     describe("When ... year-month-day") {
         it("When add work-day Then set date correctly") {
-            timesheet {
+            timesheetAny {
                 year(2003) {
                     month(Month.of(2)) {
                         day(1) {
@@ -175,7 +175,7 @@ class BuilderTest : DescribeSpec({
             val day1 = 1
             val day2 = 2
 
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 year(anyYear) {
                     month(anyMonth) {
                         day(day1) {
@@ -193,7 +193,7 @@ class BuilderTest : DescribeSpec({
 
     describe("When ... partial time range") {
         it("open end success") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 someWorkingDay {
                     "0-" - "open end entry"
                     "1-2" - "last entry"
@@ -204,7 +204,7 @@ class BuilderTest : DescribeSpec({
             sheet.entries.workEntries.first().dateRange.timeRange shouldBe (0 until 1)
         }
         it("open begin success") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 someWorkingDay {
                     "0-1" - "first entry"
                     "-2" - "open begin entry"
@@ -236,7 +236,7 @@ class BuilderTest : DescribeSpec({
     }
     describe("days off") {
         it("range") {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 year(2000) {
                     month(Month.JULY) {
                         someWorkingDay(1)

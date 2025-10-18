@@ -6,19 +6,24 @@ Keep track of your working hours with an elegant **Kotlin DSL**.
 
 # Usage
 
+Simply create an already-GIT-ignored file at `src/main/kotlin/com/github/seepick/timesheet/MyTimeSheetApp.kt` and fill
+it with the following sampple content:
+
 ```kotlin
+package com.github.seepick.timesheet
+
 import DemoTags.biz
 import DemoTags.code
 import DemoTags.meet
 import DemoTags.orga
-import com.github.cpickl.timesheet.NamedOffReason
-import com.github.cpickl.timesheet.NamedTag
-import com.github.cpickl.timesheet.WorkDay
-import com.github.cpickl.timesheet.builder.OffReasons
-import com.github.cpickl.timesheet.builder.Tags
-import com.github.cpickl.timesheet.builder.WorkDayDsl
-import com.github.cpickl.timesheet.builder.timesheet
-import com.github.cpickl.timesheet.calculate
+import com.github.seepick.timesheet.NamedOffReason
+import com.github.seepick.timesheet.NamedTag
+import com.github.seepick.timesheet.WorkDay
+import com.github.seepick.timesheet.builder.OffReasons
+import com.github.seepick.timesheet.builder.Tags
+import com.github.seepick.timesheet.builder.WorkDayDsl
+import com.github.seepick.timesheet.builder.timesheet
+import com.github.seepick.timesheet.calculate
 import java.time.Month
 
 // a sample day
@@ -28,8 +33,8 @@ fun main() {
     timesheet(DemoTags, DemoOffReasons, {
         daysOff += WorkDay.Friday
     }) {
-        year(2021) {
-            month(Month.JULY) {
+        year(2025) {
+            month(Month.OCTOBER) {
                 day(1) {
                     "9-" - "self admin" - orga
                     standup() // enhance DSL with custom extensions, nice :)
@@ -69,13 +74,10 @@ private fun WorkDayDsl.standup() {
 }
 ```
 
-Simply create a (already GIT ignored) file at `src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheetApp.kt` and fill
-it with that content.
-
 ## Auto
 
 When running the `TimesheetApp` (via gradle from a cronjob) it will look for class named
-`com.github.cpickl.timesheet.MyAutoSheet` to hook it in.
+`com.github.seepick.timesheet.MyAutoSheet` to hook it in.
 
 Your (GIT ignored) file should contain the following to enagble integration:
 

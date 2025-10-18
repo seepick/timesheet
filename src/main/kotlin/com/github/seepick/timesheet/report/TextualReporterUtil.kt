@@ -1,9 +1,7 @@
-package com.github.cpickl.timesheet.report
+package com.github.seepick.timesheet.report
 
-import com.github.cpickl.timesheet.BalanceState
-import com.github.cpickl.timesheet.TimeReportData
+import java.lang.Math.abs
 import java.text.DecimalFormat
-import kotlin.math.abs
 
 object TextualReporterUtil {
 

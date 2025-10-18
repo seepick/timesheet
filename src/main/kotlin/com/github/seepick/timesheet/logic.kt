@@ -1,7 +1,8 @@
 @file:JvmName("Logic")
 
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
+import com.github.seepick.timesheet.report.TimeReportData
 import java.time.temporal.ChronoUnit
 
 class TimeCalculator(

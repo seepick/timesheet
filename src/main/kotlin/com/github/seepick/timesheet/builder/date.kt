@@ -1,8 +1,8 @@
 @file:JvmName("Date")
 
-package com.github.cpickl.timesheet.builder
+package com.github.seepick.timesheet.builder
 
-import com.github.cpickl.timesheet.TimeRange
+import com.github.seepick.timesheet.TimeRange
 import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.LocalTime

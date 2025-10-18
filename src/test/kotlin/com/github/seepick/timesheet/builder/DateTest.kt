@@ -1,4 +1,4 @@
-package com.github.cpickl.timesheet.builder
+package com.github.seepick.timesheet.builder
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

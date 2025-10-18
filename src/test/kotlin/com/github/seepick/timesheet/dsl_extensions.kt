@@ -1,8 +1,8 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.TimeSheetDsl
-import com.github.cpickl.timesheet.builder.WorkDayDsl
-import com.github.cpickl.timesheet.builder.YearMonthDsl
+import com.github.seepick.timesheet.builder.TimeSheetDsl
+import com.github.seepick.timesheet.builder.WorkDayDsl
+import com.github.seepick.timesheet.builder.YearMonthDsl
 import java.time.LocalDate
 import java.time.Month
 

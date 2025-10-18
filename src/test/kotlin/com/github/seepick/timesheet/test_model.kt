@@ -1,7 +1,7 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.OffReasons
-import com.github.cpickl.timesheet.builder.Tags
+import com.github.seepick.timesheet.builder.OffReasons
+import com.github.seepick.timesheet.builder.Tags
 
 open class TestableTag(
     override val label: String

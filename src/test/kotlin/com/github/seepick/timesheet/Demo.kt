@@ -1,14 +1,17 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.DemoOffReasons.sickness
-import com.github.cpickl.timesheet.DemoTags.biz
-import com.github.cpickl.timesheet.DemoTags.code
-import com.github.cpickl.timesheet.DemoTags.meet
-import com.github.cpickl.timesheet.DemoTags.orga
-import com.github.cpickl.timesheet.builder.OffReasons
-import com.github.cpickl.timesheet.builder.WorkDayDsl
-import com.github.cpickl.timesheet.builder.Tags
-import com.github.cpickl.timesheet.builder.timesheet
+// TODO reactivate
+/*
+import com.github.seepick.timesheet.DemoOffReasons.sickness
+import com.github.seepick.timesheet.DemoTags.biz
+import com.github.seepick.timesheet.DemoTags.code
+import com.github.seepick.timesheet.DemoTags.meet
+import com.github.seepick.timesheet.DemoTags.orga
+import com.github.seepick.timesheet.builder.OffReasons
+import com.github.seepick.timesheet.builder.WorkDayDsl
+import com.github.seepick.timesheet.builder.Tags
+import com.github.seepick.timesheet.report.ReportContext
+import com.github.seepick.timesheet.report.calculate
 import java.time.Month
 
 // 1. a sample day
@@ -59,7 +62,7 @@ private fun WorkDayDsl.standup() {
 
 // (3. hook into main app)
 // ====================================================================================================================
-class MyAutoSheet : AutoSheet {
+class MyAutoSheet : com.github.seepick.timesheet.AutoSheet {
     override fun provide() = timesheet(DemoTags, DemoOffReasons) {
         // ... define your times here ...
     }
@@ -69,3 +72,4 @@ class MyAutoSheet : AutoSheet {
         // or: report.showNotification()
     }
 }
+*/

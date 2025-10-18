@@ -1,11 +1,10 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.BuilderException
-import com.github.cpickl.timesheet.builder.TimeSheetDsl
+import com.github.seepick.timesheet.builder.BuilderException
+import com.github.seepick.timesheet.builder.TimeSheetDsl
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import java.time.LocalDate
-
 
 infix fun TimeSheet.shouldHaveSingleEntryWithDate(expected: LocalDate) {
     entries.size shouldBe 1
@@ -14,6 +13,6 @@ infix fun TimeSheet.shouldHaveSingleEntryWithDate(expected: LocalDate) {
 
 fun failingTimesheet(dsl: TimeSheetDsl.() -> Unit): BuilderException =
     shouldThrow {
-        timesheet(entryCode = dsl)
+        timesheetAny(entryCode = dsl)
     }
 

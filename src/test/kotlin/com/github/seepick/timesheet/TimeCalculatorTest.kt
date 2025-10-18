@@ -1,7 +1,7 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.TimeSheetDsl
-import com.github.cpickl.timesheet.builder.TimeSheetInitDsl
+import com.github.seepick.timesheet.builder.TimeSheetDsl
+import com.github.seepick.timesheet.builder.TimeSheetInitDsl
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -96,7 +96,7 @@ class TimeCalculatorTest : StringSpec() {
 
     private fun calculate(today: String, initCode: TimeSheetInitDsl.() -> Unit = {}, sheet: TimeSheetDsl.() -> Unit) =
         TimeCalculator(clockReturning(today))
-            .calculate(timesheet(init = initCode, entryCode = sheet))
+            .calculate(timesheetAny(init = initCode, entryCode = sheet))
 
     private fun clockReturning(date: String): Clock {
         val clock = mockk<Clock>()

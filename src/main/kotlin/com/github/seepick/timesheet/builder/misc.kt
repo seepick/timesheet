@@ -1,9 +1,9 @@
 @file:JvmName("Misc")
 
-package com.github.cpickl.timesheet.builder
+package com.github.seepick.timesheet.builder
 
-import com.github.cpickl.timesheet.OffReason
-import com.github.cpickl.timesheet.Tag
+import com.github.seepick.timesheet.OffReason
+import com.github.seepick.timesheet.Tag
 import java.time.LocalDate
 import java.time.Month
 

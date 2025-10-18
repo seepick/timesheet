@@ -1,15 +1,15 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.OffReasons
-import com.github.cpickl.timesheet.builder.Tags
-import com.github.cpickl.timesheet.builder.TimeSheetDsl
-import com.github.cpickl.timesheet.builder.TimeSheetInitDsl
-import com.github.cpickl.timesheet.builder.timesheet
+import com.github.seepick.timesheet.builder.OffReasons
+import com.github.seepick.timesheet.builder.Tags
+import com.github.seepick.timesheet.builder.TimeSheetDsl
+import com.github.seepick.timesheet.builder.TimeSheetInitDsl
+import com.github.seepick.timesheet.builder.timesheet
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-fun timesheet(init: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
+fun timesheetAny(init: TimeSheetInitDsl.() -> Unit = {}, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
     timesheet(Tags.any, OffReasons.any, init, entryCode)
 
 object TestConstants {

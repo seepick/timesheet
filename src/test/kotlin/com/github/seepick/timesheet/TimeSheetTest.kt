@@ -1,7 +1,5 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
-import com.github.cpickl.timesheet.builder.Tags
-import com.github.cpickl.timesheet.builder.timesheet
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import java.time.Month
@@ -9,7 +7,7 @@ import java.time.Month
 class TimeSheetTest : StringSpec() {
     init {
         "start date properly calculated" {
-            val sheet = timesheet {
+            val sheet = timesheetAny {
                 year(2021) {
                     month(Month.JANUARY) {
                         day(1) {

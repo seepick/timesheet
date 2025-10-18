@@ -1,4 +1,4 @@
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec

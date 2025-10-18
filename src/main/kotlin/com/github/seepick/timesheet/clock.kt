@@ -1,6 +1,6 @@
 @file:JvmName("Clock")
 
-package com.github.cpickl.timesheet
+package com.github.seepick.timesheet
 
 import java.time.LocalDate
 import java.time.LocalDateTime

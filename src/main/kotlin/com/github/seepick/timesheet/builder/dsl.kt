@@ -1,11 +1,11 @@
 @file:JvmName("Dsl")
 
-package com.github.cpickl.timesheet.builder
+package com.github.seepick.timesheet.builder
 
-import com.github.cpickl.timesheet.OffReason
-import com.github.cpickl.timesheet.Tag
-import com.github.cpickl.timesheet.TimeSheet
-import com.github.cpickl.timesheet.WorkDay
+import com.github.seepick.timesheet.OffReason
+import com.github.seepick.timesheet.Tag
+import com.github.seepick.timesheet.TimeSheet
+import com.github.seepick.timesheet.WorkDay
 import java.time.Month
 
 interface Tags {

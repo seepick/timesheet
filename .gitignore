@@ -1,6 +1,6 @@
 /.gradle/
 /build/
 /.idea/
-/src/main/kotlin/com/github/cpickl/timesheet/MyTimeSheetApp.kt
+/src/main/kotlin/com/github/seepick/timesheet/MyTimeSheetApp.kt
 
 .DS_Store
