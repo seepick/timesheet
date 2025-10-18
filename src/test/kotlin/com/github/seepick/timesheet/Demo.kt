@@ -1,7 +1,5 @@
 package com.github.seepick.timesheet
 
-// TODO reactivate
-/*
 import com.github.seepick.timesheet.DemoOffReasons.sickness
 import com.github.seepick.timesheet.DemoTags.biz
 import com.github.seepick.timesheet.DemoTags.code
@@ -10,6 +8,7 @@ import com.github.seepick.timesheet.DemoTags.orga
 import com.github.seepick.timesheet.builder.OffReasons
 import com.github.seepick.timesheet.builder.WorkDayDsl
 import com.github.seepick.timesheet.builder.Tags
+import com.github.seepick.timesheet.builder.timesheet
 import com.github.seepick.timesheet.report.ReportContext
 import com.github.seepick.timesheet.report.calculate
 import java.time.Month
@@ -20,8 +19,8 @@ fun main() {
     timesheet(DemoTags, DemoOffReasons, {
         daysOff += WorkDay.Friday
     }) {
-        year(2021) {
-            month(Month.JULY) {
+        year(2025) {
+            month(Month.OCTOBER) {
                 day(1) {
                     "9-" - "self admin" - orga
                     standup() // enhance DSL with custom extensions, nice :)
@@ -72,4 +71,3 @@ class MyAutoSheet : com.github.seepick.timesheet.AutoSheet {
         // or: report.showNotification()
     }
 }
-*/
