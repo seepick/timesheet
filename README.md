@@ -2,7 +2,7 @@
 
 Keep track of your working hours with an elegant **Kotlin DSL**.
 
-*No spreadsheet. No text file. Just wonderful code!*
+*No spreadsheet. No text file. Just wonderful, sophisticated code supporting auto-completion and all the other amenities!*
 
 # Usage
 
@@ -71,25 +71,5 @@ private object DemoOffReasons : OffReasons {
 
 private fun WorkDayDsl.standup() {
     "10-10:30" - "standup" - meet
-}
-```
-
-## Auto
-
-When running the `TimesheetApp` (via gradle from a cronjob) it will look for class named
-`com.github.seepick.timesheet.MyAutoSheet` to hook it in.
-
-Your (GIT ignored) file should contain the following to enagble integration:
-
-```kotlin
-class MyAutoSheet : AutoSheet {
-    override fun provide() = timesheet(DemoTags, DemoOffReasons) {
-        // ... define your times here ...
-    }
-
-    override fun chooseReport(report: ReportContext) {
-        report.printCli()
-        // or: report.showNotification()
-    }
 }
 ```
