@@ -1,5 +1,11 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.contract
 
+import com.github.seepick.timesheet.date.DateRange
+import com.github.seepick.timesheet.test_infra.timeRange
+import com.github.seepick.timesheet.test_infra.workContract
+import com.github.seepick.timesheet.timesheet.EntryDateRange
+import com.github.seepick.timesheet.timesheet.TimeEntries
+import com.github.seepick.timesheet.timesheet.WorkDayEntry
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldHaveSize
@@ -15,7 +21,7 @@ class TransformContractTest : StringSpec() {
             val contractDefinedAt = LocalDate.parse("2025-11-01")
             val workEntryDay = LocalDate.parse("2025-11-05")
             val rangedWorkContracts = transformContracts(
-                contracts = listOf(DslWorkContract(contract, definedAt = contractDefinedAt)),
+                contracts = listOf(DefinedWorkContract(contract, definedAt = contractDefinedAt)),
                 timeEntries = TimeEntries.newValidatedOrThrow(listOf(workEntry(workEntryDay)))
             )
 
@@ -32,17 +38,19 @@ class TransformContractTest : StringSpec() {
 
             val rangedWorkContracts = transformContracts(
                 contracts = listOf(
-                    DslWorkContract(contract1, definedAt = contract1DefinedAt),
-                    DslWorkContract(contract2, definedAt = contract2DefinedAt),
+                    DefinedWorkContract(contract1, definedAt = contract1DefinedAt),
+                    DefinedWorkContract(contract2, definedAt = contract2DefinedAt),
                 ),
                 timeEntries = TimeEntries.newValidatedOrThrow(listOf(workEntry(workEntryDay)))
             )
 
             rangedWorkContracts.shouldHaveSize(2)
-            rangedWorkContracts[0] shouldBe RangedWorkContract(contract1,
+            rangedWorkContracts[0] shouldBe RangedWorkContract(
+                contract1,
                 DateRange(startDate = contract1DefinedAt, endDate = contract2DefinedAt.minusDays(1))
             )
-            rangedWorkContracts[1] shouldBe RangedWorkContract(contract2,
+            rangedWorkContracts[1] shouldBe RangedWorkContract(
+                contract2,
                 DateRange(startDate = contract2DefinedAt, endDate = workEntryDay)
             )
         }

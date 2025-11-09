@@ -1,6 +1,4 @@
-@file:JvmName("Clock")
-
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.date
 
 import java.time.LocalDate
 import java.time.LocalDateTime

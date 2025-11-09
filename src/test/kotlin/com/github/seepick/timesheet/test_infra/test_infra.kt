@@ -1,9 +1,11 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.test_infra
 
-import com.github.seepick.timesheet.builder.OffReasons
-import com.github.seepick.timesheet.builder.Tags
-import com.github.seepick.timesheet.builder.TimeSheetDsl
-import com.github.seepick.timesheet.builder.timesheet
+import com.github.seepick.timesheet.date.TimeRange
+import com.github.seepick.timesheet.dsl.TimeSheetDsl
+import com.github.seepick.timesheet.dsl.timesheet
+import com.github.seepick.timesheet.off.OffReasons
+import com.github.seepick.timesheet.tags.Tags
+import com.github.seepick.timesheet.timesheet.TimeSheet
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

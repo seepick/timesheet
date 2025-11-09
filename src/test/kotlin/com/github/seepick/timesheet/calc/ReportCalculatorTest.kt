@@ -1,18 +1,20 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.calc
 
-import com.github.seepick.timesheet.WorkDay.wednesday
-import com.github.seepick.timesheet.builder.TimeSheetDsl
-import com.github.seepick.timesheet.builder.june
-import com.github.seepick.timesheet.builder.tuesday
+import com.github.seepick.timesheet.date.Clock
+import com.github.seepick.timesheet.date.WorkDay.wednesday
+import com.github.seepick.timesheet.date.june
+import com.github.seepick.timesheet.date.tuesday
+import com.github.seepick.timesheet.dsl.TimeSheetDsl
+import com.github.seepick.timesheet.test_infra.parseDate
+import com.github.seepick.timesheet.test_infra.someDayOff
+import com.github.seepick.timesheet.test_infra.timesheetAny
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import java.time.DayOfWeek
 import java.time.Month
-import kotlin.contracts.contract
 
-class TimeCalculatorTest : StringSpec() {
+class ReportCalculatorTest : StringSpec() {
 
     private val anyDay = 1
     private val minutesInHour = 60L
@@ -103,7 +105,7 @@ class TimeCalculatorTest : StringSpec() {
     }
 
     private fun calculate(today: String, sheet: TimeSheetDsl.() -> Unit) =
-        TimeCalculator(clockReturning(today))
+        ReportCalculator(clockReturning(today))
             .calculate(timesheetAny(entryCode = sheet))
 
     private fun clockReturning(date: String): Clock {

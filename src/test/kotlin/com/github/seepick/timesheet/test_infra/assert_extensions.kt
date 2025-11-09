@@ -1,7 +1,8 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.test_infra
 
-import com.github.seepick.timesheet.builder.BuilderException
-import com.github.seepick.timesheet.builder.TimeSheetDsl
+import com.github.seepick.timesheet.dsl.BuilderException
+import com.github.seepick.timesheet.dsl.TimeSheetDsl
+import com.github.seepick.timesheet.timesheet.TimeSheet
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import java.time.LocalDate

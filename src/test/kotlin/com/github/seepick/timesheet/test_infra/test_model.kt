@@ -1,7 +1,12 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.test_infra
 
-import com.github.seepick.timesheet.builder.OffReasons
-import com.github.seepick.timesheet.builder.Tags
+import com.github.seepick.timesheet.contract.WorkContract
+import com.github.seepick.timesheet.date.TimeRange
+import com.github.seepick.timesheet.date.WorkDay
+import com.github.seepick.timesheet.off.OffReasons
+import com.github.seepick.timesheet.tags.Tag
+import com.github.seepick.timesheet.tags.Tags
+import com.github.seepick.timesheet.timesheet.OffReason
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.enum
@@ -37,7 +42,6 @@ val OffReasons.Companion.any: OffReasons
     get() = object : OffReasons {
         override fun all() = listOf<OffReason>(AnyOffReason)
     }
-
 
 fun Arb.Companion.workContract() = arbitrary {
     WorkContract(

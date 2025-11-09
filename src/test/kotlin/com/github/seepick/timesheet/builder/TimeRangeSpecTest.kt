@@ -1,5 +1,10 @@
 package com.github.seepick.timesheet.builder
 
+import com.github.seepick.timesheet.date.ClosedRangeSpec
+import com.github.seepick.timesheet.date.OpenEndRangeSpec
+import com.github.seepick.timesheet.date.OpenStartRangeSpec
+import com.github.seepick.timesheet.date.TimeParseException
+import com.github.seepick.timesheet.date.TimeRangeSpec
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -12,10 +17,10 @@ import java.time.LocalTime
 class TimeRangeSpecTest : DescribeSpec({
     describe("simple") {
         forAll<String, TimeRangeSpec>(
-            row("8:00-9:00", TimeRangeSpec.ClosedRangeSpec(8.h, 9.h)),
-            row("8-9", TimeRangeSpec.ClosedRangeSpec(8.h, 9.h)),
-            row("8-9:30", TimeRangeSpec.ClosedRangeSpec(8.h, 9 h 30)),
-            row("8:30-9", TimeRangeSpec.ClosedRangeSpec(8 h 30, 9.h)),
+            row("8:00-9:00", ClosedRangeSpec(8.h, 9.h)),
+            row("8-9", ClosedRangeSpec(8.h, 9.h)),
+            row("8-9:30", ClosedRangeSpec(8.h, 9 h 30)),
+            row("8:30-9", ClosedRangeSpec(8 h 30, 9.h)),
         ) { input, expectedRange ->
             input.asClue {
                 TimeRangeSpec.parse(input) shouldBe expectedRange
@@ -24,10 +29,10 @@ class TimeRangeSpecTest : DescribeSpec({
     }
     describe("partial") {
         forAll(
-            row("8-", TimeRangeSpec.OpenEndRangeSpec(start = 8.h)),
-            row("8:30-", TimeRangeSpec.OpenEndRangeSpec(start = 8 h 30)),
-            row("-8", TimeRangeSpec.OpenStartRangeSpec(end = 8.h)),
-            row("-8:30", TimeRangeSpec.OpenStartRangeSpec(end = 8 h 30)),
+            row("8-", OpenEndRangeSpec(start = 8.h)),
+            row("8:30-", OpenEndRangeSpec(start = 8 h 30)),
+            row("-8", OpenStartRangeSpec(end = 8.h)),
+            row("-8:30", OpenStartRangeSpec(end = 8 h 30)),
         ) { input, expectedRange ->
             input.asClue {
                 TimeRangeSpec.parse(input) shouldBe expectedRange

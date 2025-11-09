@@ -1,9 +1,9 @@
 package com.github.seepick.timesheet.report
 
-import com.github.seepick.timesheet.Hours
-import com.github.seepick.timesheet.Minutes
-import com.github.seepick.timesheet.TimeCalculator
-import com.github.seepick.timesheet.TimeSheet
+import com.github.seepick.timesheet.date.Hours
+import com.github.seepick.timesheet.date.Minutes
+import com.github.seepick.timesheet.calc.ReportCalculator
+import com.github.seepick.timesheet.timesheet.TimeSheet
 
 class ReportContext(
     private val sheet: TimeSheet,
@@ -20,7 +20,7 @@ class ReportContext(
 
 }
 
-private val calculator = TimeCalculator()
+private val calculator = ReportCalculator()
 
 fun TimeSheet.calculate() = ReportContext(this, calculator.calculate(this))
 
@@ -36,14 +36,14 @@ data class TimeReportData(
     val balanceInMinutes: Minutes = totalMinutesWorked - totalMinutesToWork
     val balanceInHours: Hours = balanceInMinutes.toDouble() / 60.0
     val balanceState = when {
-        balanceInMinutes < 0 -> BalanceState.ToLittle
+        balanceInMinutes < 0 -> BalanceState.TooLittle
         balanceInMinutes > 0 -> BalanceState.Surplus
         else -> BalanceState.ExactMatch
     }
 }
 
 enum class BalanceState {
-    ToLittle,
+    TooLittle,
     Surplus,
     ExactMatch;
 }

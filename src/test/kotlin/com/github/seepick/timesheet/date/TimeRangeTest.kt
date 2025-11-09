@@ -1,9 +1,8 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.date
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.time.LocalDate
 import java.time.LocalTime
 
 class TimeRangeTest : DescribeSpec({
@@ -29,7 +28,7 @@ class TimeRangeTest : DescribeSpec({
     }
     describe("not overlaps") {
         it("range A before range B") {
-            TimeRange(time1, time2).overlaps(TimeRange(time3, time4))shouldBe false
+            TimeRange(time1, time2).overlaps(TimeRange(time3, time4)) shouldBe false
         }
         it("range A after range B") {
             TimeRange(time3, time4).overlaps(TimeRange(time1, time2)) shouldBe false

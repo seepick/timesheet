@@ -1,14 +1,15 @@
-package com.github.seepick.timesheet.builder
+package com.github.seepick.timesheet.date
 
-import com.github.seepick.timesheet.Day
-import com.github.seepick.timesheet.Day.friday
-import com.github.seepick.timesheet.Day.monday
-import com.github.seepick.timesheet.Day.saturday
-import com.github.seepick.timesheet.Day.sunday
-import com.github.seepick.timesheet.Day.thursday
-import com.github.seepick.timesheet.Day.tuesday
-import com.github.seepick.timesheet.Day.wednesday
-import java.time.DayOfWeek
+import com.github.seepick.timesheet.date.Day.friday
+import com.github.seepick.timesheet.date.Day.monday
+import com.github.seepick.timesheet.date.Day.saturday
+import com.github.seepick.timesheet.date.Day.sunday
+import com.github.seepick.timesheet.date.Day.thursday
+import com.github.seepick.timesheet.date.Day.tuesday
+import com.github.seepick.timesheet.date.Day.wednesday
+import com.github.seepick.timesheet.dsl.MonthDsl
+import com.github.seepick.timesheet.dsl.WorkDayDsl
+import com.github.seepick.timesheet.dsl.YearDsl
 import java.time.Month
 
 val Int.st get() = this

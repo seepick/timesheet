@@ -12,7 +12,7 @@ class SimpleCliReporter : Reporter {
 
 private val BalanceState.wrapColor
     get() = when (this) {
-        BalanceState.ToLittle -> PrintSymbols.ANSI_RED
+        BalanceState.TooLittle -> PrintSymbols.ANSI_RED
         BalanceState.Surplus -> PrintSymbols.ANSI_GREEN
         BalanceState.ExactMatch -> PrintSymbols.ANSI_CYAN
     }

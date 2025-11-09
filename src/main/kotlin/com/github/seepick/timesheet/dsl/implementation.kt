@@ -1,31 +1,45 @@
-package com.github.seepick.timesheet.builder
+package com.github.seepick.timesheet.dsl
 
-import com.github.seepick.timesheet.Day
-import com.github.seepick.timesheet.WorkContract
-import com.github.seepick.timesheet.DayOffEntry
-import com.github.seepick.timesheet.DslWorkContract
-import com.github.seepick.timesheet.EntryDateRange
-import com.github.seepick.timesheet.InputValidationException
-import com.github.seepick.timesheet.OffReason
-import com.github.seepick.timesheet.Tag
-import com.github.seepick.timesheet.TimeEntries
-import com.github.seepick.timesheet.TimeEntry
-import com.github.seepick.timesheet.TimeRange
-import com.github.seepick.timesheet.TimeSheet
-import com.github.seepick.timesheet.WorkDay
-import com.github.seepick.timesheet.WorkDayEntry
-import com.github.seepick.timesheet.transformContracts
-import java.time.DayOfWeek
+import com.github.seepick.timesheet.contract.ContractDsl
+import com.github.seepick.timesheet.date.Day
+import com.github.seepick.timesheet.contract.WorkContract
+import com.github.seepick.timesheet.timesheet.DayOffEntry
+import com.github.seepick.timesheet.contract.DefinedWorkContract
+import com.github.seepick.timesheet.timesheet.EntryDateRange
+import com.github.seepick.timesheet.timesheet.InvalidTimeEntryException
+import com.github.seepick.timesheet.timesheet.OffReason
+import com.github.seepick.timesheet.tags.Tag
+import com.github.seepick.timesheet.timesheet.TimeEntries
+import com.github.seepick.timesheet.timesheet.TimeEntry
+import com.github.seepick.timesheet.date.TimeRange
+import com.github.seepick.timesheet.timesheet.TimeSheet
+import com.github.seepick.timesheet.date.WorkDay
+import com.github.seepick.timesheet.timesheet.WorkDayEntry
+import com.github.seepick.timesheet.contract.transformContracts
+import com.github.seepick.timesheet.date.ClosedRangeSpec
+import com.github.seepick.timesheet.date.HasEndTime
+import com.github.seepick.timesheet.date.HasStartTime
+import com.github.seepick.timesheet.date.OpenEndRangeSpec
+import com.github.seepick.timesheet.date.OpenStartRangeSpec
+import com.github.seepick.timesheet.date.TimeRangeSpec
+import com.github.seepick.timesheet.date.toParsableDate
+import com.github.seepick.timesheet.off.BuilderDayOffEntry
+import com.github.seepick.timesheet.off.BuilderDaysOffEntry
+import com.github.seepick.timesheet.off.DayOffDsl
+import com.github.seepick.timesheet.off.OffReasons
+import com.github.seepick.timesheet.off.ReasonableOffEntry
+import com.github.seepick.timesheet.tags.TagDsl
+import com.github.seepick.timesheet.tags.Tags
 import java.time.LocalDate
 import java.time.Month
 import kotlin.IllegalStateException
 
-internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
+class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private val context: TimeSheetContext<TAGS, OFFS>
 ) :
     TimeSheetDsl,
     ContractDsl,
-    WorkDayDsl, DayOffDsl, PostAboutDsl,
+    WorkDayDsl, DayOffDsl, TagDsl,
     YearDsl, MonthDsl {
 
     private val entries = mutableListOf<BuilderEntry>()
@@ -33,7 +47,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private lateinit var currentEntry: BuilderEntry
     private var currentYear = -1 // Int not possible to do lateinit :-/
     private lateinit var currentMonth: Month
-    private val contracts = mutableListOf<DslWorkContract>()
+    private val contracts = mutableListOf<DefinedWorkContract>()
 
     // contract DSL
     // ================================================================================================
@@ -50,7 +64,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
 
     override fun contract(code: ContractDsl.() -> Unit) {
         code()
-        contracts += DslWorkContract(
+        contracts += DefinedWorkContract(
             contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek),
             definedAt = currentDay
         )
@@ -129,7 +143,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     // DAY DSL
     // ================================================================================================
 
-    override infix fun String.about(description: String): PostAboutDsl {
+    override infix fun String.about(description: String): TagDsl {
         val timeRangeSpec = TimeRangeSpec.parse(this)
         // overlap validation is done afterwards (as time ranges are built dynamically)
         currentEntry = BuilderWorkDayEntry(currentDay, timeRangeSpec, description)
@@ -172,11 +186,11 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
             TimeEntries.newValidatedOrThrow(entries.mapIndexed { i, entry ->
                 entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
             }.flatten())
-        } catch (e: InputValidationException) {
+        } catch (e: InvalidTimeEntryException) {
             throw BuilderException("Invalid timesheet defined: ${e.message}", e)
         }
         if(contracts.isEmpty()) {
-            contracts += DslWorkContract(WorkContract.default, realEntries.firstDate)
+            contracts += DefinedWorkContract(WorkContract.default, realEntries.firstDate)
         }
 
         return TimeSheet(
@@ -214,6 +228,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
                     reason = reason ?: throw BuilderException("no day off reason was given for: $this")
                 )
             }
+            else -> throw UnsupportedOperationException("Unrecognized BuilderEntry type: ${this.javaClass.name}")
         }
 
     private fun transformTimeRange(
@@ -222,9 +237,9 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         day: LocalDate
     ): TimeRange =
         when (timeRangeSpec) {
-            is TimeRangeSpec.ClosedRangeSpec -> timeRangeSpec.toTimeRange()
-            is TimeRangeSpec.OpenStartRangeSpec -> transformOpenAndEndRange(true, timeRangeSpec, neighbours, day)
-            is TimeRangeSpec.OpenEndRangeSpec -> transformOpenAndEndRange(false, timeRangeSpec, neighbours, day)
+            is ClosedRangeSpec -> timeRangeSpec.toTimeRange()
+            is OpenStartRangeSpec -> transformOpenAndEndRange(true, timeRangeSpec, neighbours, day)
+            is OpenEndRangeSpec -> transformOpenAndEndRange(false, timeRangeSpec, neighbours, day)
         }
 
     private fun transformOpenAndEndRange(
@@ -249,11 +264,9 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
             throw BuilderException("$labelPrefix $labelNeighbour neighbour expected $labelInversed TIME to be defined!")
         }
         return if (isStartOpen) {
-            (timeRangeSpec as TimeRangeSpec.OpenStartRangeSpec).toTimeRange(start = (neighbour.timeRangeSpec as HasEndTime).end)
+            (timeRangeSpec as OpenStartRangeSpec).toTimeRange(start = (neighbour.timeRangeSpec as HasEndTime).end)
         } else {
-            (timeRangeSpec as TimeRangeSpec.OpenEndRangeSpec).toTimeRange(end = (neighbour.timeRangeSpec as HasStartTime).start)
+            (timeRangeSpec as OpenEndRangeSpec).toTimeRange(end = (neighbour.timeRangeSpec as HasStartTime).start)
         }
     }
-
-
 }
