@@ -1,6 +1,8 @@
 package com.github.seepick.timesheet.builder
 
 import com.github.seepick.timesheet.DateRange
+import com.github.seepick.timesheet.Day
+import com.github.seepick.timesheet.Day.sunday
 import com.github.seepick.timesheet.DayOffEntry
 import com.github.seepick.timesheet.EntryDateRange
 import com.github.seepick.timesheet.OffReason
@@ -175,7 +177,7 @@ class BuilderTest : DescribeSpec({
         it("When add work-day Then set date correctly") {
             timesheetAny {
                 year(2003) {
-                    month(Month.of(2)) {
+                    february {
                         day(1) {
                             someWorkEntry()
                         }
@@ -269,8 +271,8 @@ class BuilderTest : DescribeSpec({
             shouldThrow<IllegalArgumentException> {
                 timesheetAny {
                     year(2025) {
-                        month(NOVEMBER) {
-                            day(SATURDAY, 9) { // NO! it's sunday
+                        november {
+                            saturday(9) { // NO! it's sunday
                                 "10-12" - "msg" - Tag.any
                             }
                         }
@@ -282,7 +284,7 @@ class BuilderTest : DescribeSpec({
             val sheet = timesheetAny {
                 year(2025) {
                     month(NOVEMBER) {
-                        day(SUNDAY, 9) {
+                        sunday(9) {
                             "10-12" - "msg" - Tag.any
                         }
                     }

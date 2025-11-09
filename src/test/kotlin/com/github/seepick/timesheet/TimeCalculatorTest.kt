@@ -2,12 +2,15 @@ package com.github.seepick.timesheet
 
 import com.github.seepick.timesheet.WorkDay.wednesday
 import com.github.seepick.timesheet.builder.TimeSheetDsl
+import com.github.seepick.timesheet.builder.june
+import com.github.seepick.timesheet.builder.tuesday
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import java.time.DayOfWeek
 import java.time.Month
+import kotlin.contracts.contract
 
 class TimeCalculatorTest : StringSpec() {
 
@@ -66,8 +69,8 @@ class TimeCalculatorTest : StringSpec() {
         "Given wednesday off and work on tuesday When report until wednesday Then filter out free day" {
             val report = calculate("2.6.21") { // next day is wednesday, which is off
                 year(2021) {
-                    month(Month.JUNE) {
-                        day(DayOfWeek.TUESDAY, 1) {
+                    june {
+                        tuesday(1) {
                             contract {
                                 hoursPerWeek = 4
                                 dayOff = wednesday
