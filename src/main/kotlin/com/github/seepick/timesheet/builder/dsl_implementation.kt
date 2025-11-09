@@ -1,5 +1,6 @@
 package com.github.seepick.timesheet.builder
 
+import com.github.seepick.timesheet.Day
 import com.github.seepick.timesheet.WorkContract
 import com.github.seepick.timesheet.DayOffEntry
 import com.github.seepick.timesheet.DslWorkContract
@@ -25,7 +26,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     TimeSheetDsl,
     ContractDsl,
     WorkDayDsl, DayOffDsl, PostAboutDsl,
-    YearDsl, YearMonthDsl {
+    YearDsl, MonthDsl {
 
     private val entries = mutableListOf<BuilderEntry>()
     private lateinit var currentDay: LocalDate
@@ -47,7 +48,7 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
 
     override var daysOff: Set<WorkDay> = WorkContract.default.daysOff
 
-    override fun workContract(code: ContractDsl.() -> Unit) {
+    override fun contract(code: ContractDsl.() -> Unit) {
         code()
         contracts += DslWorkContract(
             contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek),
@@ -58,13 +59,12 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     // MAIN TIMESHEET DSL
     // ================================================================================================
 
-
     override fun year(year: Int, code: YearDsl.() -> Unit) {
         currentYear = year
         code()
     }
 
-    override fun month(month: Month, code: YearMonthDsl.() -> Unit) {
+    override fun month(month: Month, code: MonthDsl.() -> Unit) {
         currentMonth = month
         code()
     }
@@ -78,22 +78,31 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         code()
     }
 
-    override fun day(dayLabel: DayOfWeek, day: Int, code: WorkDayDsl.() -> Unit) {
-        val currentDate = LocalDate.of(currentYear, currentMonth, day)
-        if (currentDate.dayOfWeek != dayLabel) {
-            throw IllegalArgumentException("Current date [$currentDate] with day [${currentDate.dayOfWeek}] mismatches expected [$dayLabel]!")
-        }
+    override fun day(dayLabel: Day, day: Int, code: WorkDayDsl.() -> Unit) {
+        verifyDayLabel(dayLabel, day)
         day(day, code)
     }
 
     private fun dateByCurrentSetYearAndMonth(day: Int) =
         LocalDate.of(currentYear, currentMonth, day)
 
+    private fun verifyDayLabel(dayLabel: Day, day: Int) {
+        val currentDate = LocalDate.of(currentYear, currentMonth, day)
+        if (currentDate.dayOfWeek != dayLabel.javaDay) {
+            throw IllegalArgumentException("Current date [$currentDate] with day [${currentDate.dayOfWeek}] mismatches expected [$dayLabel]!")
+        }
+    }
+
     // DAY OFF DSL
     // ================================================================================================
 
     override fun dayOff(day: Int): DayOffDsl =
         _dayOff(dateByCurrentSetYearAndMonth(day))
+
+    override fun dayOff(dayLabel: WorkDay, day: Int): DayOffDsl {
+        verifyDayLabel(dayLabel.day, day)
+        return dayOff(day)
+    }
 
     override fun daysOff(days: IntRange): DayOffDsl {
         currentEntry = BuilderDaysOffEntry(currentYear, currentMonth, days)

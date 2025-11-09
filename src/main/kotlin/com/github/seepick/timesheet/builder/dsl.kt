@@ -2,6 +2,7 @@
 
 package com.github.seepick.timesheet.builder
 
+import com.github.seepick.timesheet.Day
 import com.github.seepick.timesheet.OffReason
 import com.github.seepick.timesheet.Tag
 import com.github.seepick.timesheet.TimeSheet
@@ -51,7 +52,7 @@ interface TimeSheetDsl {
 }
 
 interface YearDsl {
-    fun month(month: Month, code: YearMonthDsl.() -> Unit)
+    fun month(month: Month, code: MonthDsl.() -> Unit)
 }
 
 @TimesheetAppDsl
@@ -62,10 +63,11 @@ interface ContractDsl {
 }
 
 @TimesheetAppDsl
-interface YearMonthDsl {
+interface MonthDsl {
     fun day(day: Int, code: WorkDayDsl.() -> Unit)
-    fun day(dayLabel: DayOfWeek, day: Int, code: WorkDayDsl.() -> Unit)
+    fun day(dayLabel: Day, day: Int, code: WorkDayDsl.() -> Unit)
     fun dayOff(day: Int): DayOffDsl
+    fun dayOff(dayLabel: WorkDay, day: Int): DayOffDsl
     fun daysOff(days: IntRange): DayOffDsl
 
     // necessary duplicate
@@ -75,7 +77,7 @@ interface YearMonthDsl {
 
 @TimesheetAppDsl
 interface WorkDayDsl {
-    fun workContract(code: ContractDsl.() -> Unit)
+    fun contract(code: ContractDsl.() -> Unit)
     infix fun String.about(description: String): PostAboutDsl
     operator fun String.minus(description: String): PostAboutDsl
 }

@@ -12,13 +12,24 @@ import java.time.temporal.ChronoUnit
 typealias Minutes = Long
 typealias Hours = Double
 
-enum class WorkDay(val allDays: DayOfWeek) {
-    Monday(DayOfWeek.MONDAY),
-    Tuesday(DayOfWeek.TUESDAY),
-    Wednesday(DayOfWeek.WEDNESDAY),
-    Thursday(DayOfWeek.THURSDAY),
-    Friday(DayOfWeek.FRIDAY),
+enum class WorkDay(val javaDay: DayOfWeek, val day: Day) {
+    monday(DayOfWeek.MONDAY, Day.monday),
+    tuesday(DayOfWeek.TUESDAY, Day.tuesday),
+    wednesday(DayOfWeek.WEDNESDAY, Day.wednesday),
+    thursday(DayOfWeek.THURSDAY, Day.thursday),
+    friday(DayOfWeek.FRIDAY, Day.friday),
 }
+
+enum class Day(val javaDay: DayOfWeek) {
+    monday(DayOfWeek.MONDAY),
+    tuesday(DayOfWeek.TUESDAY),
+    wednesday(DayOfWeek.WEDNESDAY),
+    thursday(DayOfWeek.THURSDAY),
+    friday(DayOfWeek.FRIDAY),
+    saturday(DayOfWeek.SATURDAY),
+    sunday(DayOfWeek.SUNDAY),
+}
+
 
 data class TimeSheet(
     val entries: TimeEntries,

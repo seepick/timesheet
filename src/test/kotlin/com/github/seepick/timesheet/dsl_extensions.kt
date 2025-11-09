@@ -2,14 +2,14 @@ package com.github.seepick.timesheet
 
 import com.github.seepick.timesheet.builder.TimeSheetDsl
 import com.github.seepick.timesheet.builder.WorkDayDsl
-import com.github.seepick.timesheet.builder.YearMonthDsl
+import com.github.seepick.timesheet.builder.MonthDsl
 import java.time.LocalDate
 import java.time.Month
 
 private val anyYear = 2000
 private val anyMonth = Month.JANUARY
 
-fun TimeSheetDsl.anyYearMonth(code: YearMonthDsl.() -> Unit) {
+fun TimeSheetDsl.anyYearMonth(code: MonthDsl.() -> Unit) {
     year(anyYear) {
         month(anyMonth, code)
     }
@@ -45,7 +45,7 @@ fun TimeSheetDsl.someDayOff(date: LocalDate = TestConstants.someDate) {
     }
 }
 
-fun YearMonthDsl.someWorkingDay(day: Int) {
+fun MonthDsl.someWorkingDay(day: Int) {
     day(day) {
         someWorkEntry()
     }
@@ -58,6 +58,6 @@ fun WorkDayDsl.someWorkEntry(timeRange: String = someTimeRange, about: String = 
 
 val WorkDayDsl.someTimeRange: String get() = "10-11"
 
-fun YearMonthDsl.someDayOff(day: Int) {
+fun MonthDsl.someDayOff(day: Int) {
     dayOff(day) becauseOf OffReason.any
 }

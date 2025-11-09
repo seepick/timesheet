@@ -4,15 +4,13 @@ import com.github.seepick.timesheet.DateRange
 import com.github.seepick.timesheet.DayOffEntry
 import com.github.seepick.timesheet.EntryDateRange
 import com.github.seepick.timesheet.OffReason
-import com.github.seepick.timesheet.RangedWorkContract
 import com.github.seepick.timesheet.Tag
 import com.github.seepick.timesheet.TestConstants
 import com.github.seepick.timesheet.TimeEntries
 import com.github.seepick.timesheet.TimeRange
 import com.github.seepick.timesheet.WorkContract
-import com.github.seepick.timesheet.WorkDay
-import com.github.seepick.timesheet.WorkDay.Friday
-import com.github.seepick.timesheet.WorkDay.Monday
+import com.github.seepick.timesheet.WorkDay.friday
+import com.github.seepick.timesheet.WorkDay.monday
 import com.github.seepick.timesheet.WorkDayEntry
 import com.github.seepick.timesheet.until
 import com.github.seepick.timesheet.any
@@ -35,11 +33,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.kotest.matchers.types.shouldBeSameInstanceAs
-import org.jetbrains.annotations.Contract
-import org.junit.jupiter.api.assertThrows
-import java.time.DayOfWeek
-import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
@@ -48,7 +41,6 @@ import java.time.Month
 import java.time.Month.JULY
 import java.time.Month.NOVEMBER
 import java.time.Month.SEPTEMBER
-import kotlin.contracts.contract
 
 class BuilderTest : DescribeSpec({
 
@@ -311,16 +303,16 @@ class BuilderTest : DescribeSpec({
         it("custom contract") {
             val sheet = timesheetAny {
                 someWorkingDay(someDate) {
-                    workContract {
+                    contract {
                         hoursPerWeek = 10
-                        dayOff = Friday
+                        dayOff = friday
                     }
                     someWorkEntry()
                 }
             }
 
             sheet.contracts.shouldBeSingleton().first().contract shouldBe WorkContract(
-                daysOff = setOf(Friday),
+                daysOff = setOf(friday),
                 hoursPerWeek = 10
             )
         }
@@ -329,9 +321,9 @@ class BuilderTest : DescribeSpec({
                 year(2000) {
                     month(SEPTEMBER) {
                         day(1) {
-                            workContract {
+                            contract {
                                 hoursPerWeek = 10
-                                daysOff = setOf(Monday)
+                                daysOff = setOf(monday)
                             }
                             "9-10" - "x" - Tag.any
                         }

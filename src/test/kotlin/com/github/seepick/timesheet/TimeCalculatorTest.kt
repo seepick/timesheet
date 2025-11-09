@@ -1,6 +1,6 @@
 package com.github.seepick.timesheet
 
-import com.github.seepick.timesheet.WorkDay.Wednesday
+import com.github.seepick.timesheet.WorkDay.wednesday
 import com.github.seepick.timesheet.builder.TimeSheetDsl
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -8,7 +8,6 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.DayOfWeek
 import java.time.Month
-import kotlin.contracts.contract
 
 class TimeCalculatorTest : StringSpec() {
 
@@ -69,9 +68,9 @@ class TimeCalculatorTest : StringSpec() {
                 year(2021) {
                     month(Month.JUNE) {
                         day(DayOfWeek.TUESDAY, 1) {
-                            workContract {
+                            contract {
                                 hoursPerWeek = 4
-                                dayOff = Wednesday
+                                dayOff = wednesday
                             }
                             "10-18" - "any"
                         }
