@@ -29,6 +29,7 @@ import com.github.seepick.timesheet.timesheet.EntryDateRange
 import com.github.seepick.timesheet.timesheet.OffReason
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.WorkDayEntry
+import com.github.seepick.timesheet.timesheet.byTimeEntries
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeSingleton
@@ -92,7 +93,7 @@ class BuilderTest : DescribeSpec({
                 }
             }
 
-            sheet.entries shouldBe TimeEntries.newValidatedOrThrow(
+            sheet.entries shouldBe TimeEntries.byTimeEntries(
                 listOf(
                     WorkDayEntry(
                         dateRange = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),

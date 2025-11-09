@@ -24,10 +24,6 @@ interface YearDsl {
     fun month(month: Month, code: MonthDsl.() -> Unit)
 }
 
-interface MonthDayOffDsl {
-
-}
-
 @TimesheetAppDsl
 interface MonthDsl {
     fun day(day: Int, code: WorkDayDsl.() -> Unit)

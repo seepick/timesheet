@@ -1,13 +1,13 @@
 package com.github.seepick.timesheet.tags
 
 import com.github.seepick.timesheet.dsl.BuilderWorkDayEntry
-import com.github.seepick.timesheet.dsl.CurrentEntryHolder
+import com.github.seepick.timesheet.dsl.Current
 import com.github.seepick.timesheet.dsl.TimeSheetContext
 import com.github.seepick.timesheet.off.OffReasons
 
 class TagDslImpl<TAGS : Tags, OFFS : OffReasons>(
     private val context: TimeSheetContext<TAGS, OFFS>,
-    private val currentEntry: CurrentEntryHolder
+    private val current: Current
 ) : TagDsl {
 
     override fun tag(tag: Tag) {
@@ -19,7 +19,7 @@ class TagDslImpl<TAGS : Tags, OFFS : OffReasons>(
     }
 
     private fun addTags(allTags: List<Tag>) {
-        val entry = currentEntry.entry as BuilderWorkDayEntry
+        val entry = current.entry as BuilderWorkDayEntry
         allTags.forEach { tag ->
             if (!context.tags.contains(tag)) {
                 // TODO test me; if configure no tags, and this tag requested doesnt exist; throw!

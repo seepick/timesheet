@@ -6,6 +6,7 @@ import com.github.seepick.timesheet.test_infra.workContract
 import com.github.seepick.timesheet.timesheet.EntryDateRange
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.WorkDayEntry
+import com.github.seepick.timesheet.timesheet.byTimeEntries
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldHaveSize
@@ -22,7 +23,7 @@ class TransformContractTest : StringSpec() {
             val workEntryDay = LocalDate.parse("2025-11-05")
             val rangedWorkContracts = transformContracts(
                 contracts = listOf(DefinedWorkContract(contract, definedAt = contractDefinedAt)),
-                timeEntries = TimeEntries.newValidatedOrThrow(listOf(workEntry(workEntryDay)))
+                timeEntries = TimeEntries.byTimeEntries(listOf(workEntry(workEntryDay)))
             )
 
             rangedWorkContracts.shouldBeSingleton().first() shouldBe RangedWorkContract(
@@ -41,7 +42,7 @@ class TransformContractTest : StringSpec() {
                     DefinedWorkContract(contract1, definedAt = contract1DefinedAt),
                     DefinedWorkContract(contract2, definedAt = contract2DefinedAt),
                 ),
-                timeEntries = TimeEntries.newValidatedOrThrow(listOf(workEntry(workEntryDay)))
+                timeEntries = TimeEntries.byTimeEntries(listOf(workEntry(workEntryDay)))
             )
 
             rangedWorkContracts.shouldHaveSize(2)

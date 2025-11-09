@@ -17,66 +17,60 @@ import com.github.seepick.timesheet.off.ReasonableOffEntry
 import com.github.seepick.timesheet.tags.TagDsl
 import com.github.seepick.timesheet.tags.TagDslImpl
 import com.github.seepick.timesheet.tags.Tags
-import com.github.seepick.timesheet.timesheet.InvalidTimeEntryException
 import com.github.seepick.timesheet.timesheet.OffReason
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.TimeSheet
 import java.time.LocalDate
 import java.time.Month
 
-class CurrentEntryHolder {
+class Current {
+    var year = -1 // Int not possible to do lateinit :-/
+    lateinit var month: Month
+    lateinit var day: LocalDate
     lateinit var entry: BuilderEntry
+    val entries = mutableListOf<BuilderEntry>()
+    val contracts = mutableListOf<DefinedWorkContract>()
+
+    fun ensureAtLeastOneContract(firstDate: LocalDate) {
+        if (contracts.isEmpty()) {
+            contracts += DefinedWorkContract(WorkContract.default, firstDate)
+        }
+    }
 }
 
 class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private val context: TimeSheetContext<TAGS, OFFS>,
     private val contractDslImpl: ContractDslImpl = ContractDslImpl(),
-    private val currentEntryHolder: CurrentEntryHolder = CurrentEntryHolder(),
-    private val tagDslImpl: TagDslImpl<TAGS, OFFS> = TagDslImpl(context, currentEntryHolder),
+    private val current: Current = Current(),
+    private val tagDslImpl: TagDslImpl<TAGS, OFFS> = TagDslImpl(context, current),
 ) :
     TimeSheetDsl,
     YearDsl,
     MonthDsl,
-    ContractDsl by contractDslImpl,
     WorkDayDsl,
     DayOffDsl,
+    ContractDsl by contractDslImpl,
     TagDsl by tagDslImpl {
-
-    private val entries = mutableListOf<BuilderEntry>()
-    private lateinit var currentDay: LocalDate
-
-    private var currentYear = -1 // Int not possible to do lateinit :-/
-    private lateinit var currentMonth: Month
-
-    private val contracts = mutableListOf<DefinedWorkContract>()
-
-    override fun contract(code: ContractDsl.() -> Unit) {
-        code()
-        contracts += DefinedWorkContract(
-            contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek),
-            definedAt = currentDay
-        )
-    }
 
     // MAIN TIMESHEET DSL
     // ================================================================================================
 
     override fun year(year: Int, code: YearDsl.() -> Unit) {
-        currentYear = year
+        current.year = year
         code()
     }
 
     override fun month(month: Month, code: MonthDsl.() -> Unit) {
-        currentMonth = month
+        current.month = month
         code()
     }
 
     override fun day(day: Int, code: WorkDayDsl.() -> Unit) {
         val newDate = dateByCurrentSetYearAndMonth(day)
-        if (entries.any { it.matches(newDate) }) {
+        if (current.entries.any { it.matches(newDate) }) {
             throw BuilderException("Duplicate date entries: ${newDate.toParsableDate()}")
         }
-        currentDay = newDate
+        current.day = newDate
         code()
     }
 
@@ -86,20 +80,41 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     }
 
     private fun dateByCurrentSetYearAndMonth(day: Int) =
-        LocalDate.of(currentYear, currentMonth, day)
+        LocalDate.of(current.year, current.month, day)
 
     private fun verifyDayLabel(dayLabel: Day, day: Int) {
-        val currentDate = LocalDate.of(currentYear, currentMonth, day)
+        val currentDate = LocalDate.of(current.year, current.month, day)
         if (currentDate.dayOfWeek != dayLabel.javaDay) {
             throw IllegalArgumentException("Current date [$currentDate] with day [${currentDate.dayOfWeek}] mismatches expected [$dayLabel]!")
         }
     }
 
+    // DAY DSL
+    // ================================================================================================
+
+    override fun contract(code: ContractDsl.() -> Unit) {
+        code()
+        current.contracts += DefinedWorkContract(
+            contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek),
+            definedAt = current.day
+        )
+    }
+
+    override infix fun String.about(description: String): TagDsl {
+        val timeRangeSpec = TimeRangeSpec.parse(this)
+        // overlap validation is done afterwards (as time ranges are built dynamically)
+        current.entry = BuilderWorkDayEntry(current.day, timeRangeSpec, description)
+        current.entries += current.entry
+        return this@DslImplementation
+    }
+
+    override operator fun String.minus(description: String) = about(description)
+
     // DAY OFF DSL
     // ================================================================================================
 
     override fun dayOff(day: Int): DayOffDsl =
-        _dayOff(dateByCurrentSetYearAndMonth(day))
+        internalDayOff(dateByCurrentSetYearAndMonth(day))
 
     override fun dayOff(dayLabel: WorkDay, day: Int): DayOffDsl {
         verifyDayLabel(dayLabel.day, day)
@@ -107,60 +122,37 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     }
 
     override fun daysOff(days: IntRange): DayOffDsl {
-        currentEntryHolder.entry = BuilderDaysOffEntry(currentYear, currentMonth, days)
-        entries += currentEntryHolder.entry
+        current.entry = BuilderDaysOffEntry(current.year, current.month, days)
+        current.entries += current.entry
         return this
     }
 
     override fun DayOffDsl.becauseOf(reason: OffReason) {
-        val entry = currentEntryHolder.entry as? ReasonableOffEntry
-            ?: throw IllegalStateException("Expected entry to be reasonable, but was: ${currentEntryHolder.entry}")
+        val entry = current.entry as? ReasonableOffEntry
+            ?: throw IllegalStateException("Expected entry to be reasonable, but was: ${current.entry}")
         if (!context.offs.contains(reason)) {
             // TODO test whether contains off reason
         }
         entry.reason = reason
     }
 
-    private fun _dayOff(newDate: LocalDate): DayOffDsl {
-        currentDay = newDate // TODO needed to set?!
-        currentEntryHolder.entry = BuilderDayOffEntry(currentDay)
-        entries += currentEntryHolder.entry
+    private fun internalDayOff(newDate: LocalDate): DayOffDsl {
+        current.day = newDate // TODO needed to set?!
+        current.entry = BuilderDayOffEntry(current.day)
+        current.entries += current.entry
         return this
     }
-
-    // DAY DSL
-    // ================================================================================================
-
-    override infix fun String.about(description: String): TagDsl {
-        val timeRangeSpec = TimeRangeSpec.parse(this)
-        // overlap validation is done afterwards (as time ranges are built dynamically)
-        currentEntryHolder.entry = BuilderWorkDayEntry(currentDay, timeRangeSpec, description)
-        entries += currentEntryHolder.entry
-        return this@DslImplementation
-    }
-
-    override operator fun String.minus(description: String) = about(description)
-
 
     // BUILD
     // ================================================================================================
 
     fun build(): TimeSheet {
-        val realEntries = try {
-            TimeEntries.newValidatedOrThrow(entries.mapIndexed { i, entry ->
-                entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
-            }.flatten())
-        } catch (e: InvalidTimeEntryException) {
-            throw BuilderException("Invalid timesheet defined: ${e.message}", e)
-        }
-        if (contracts.isEmpty()) {
-            contracts += DefinedWorkContract(WorkContract.default, realEntries.firstDate)
-        }
+        val timeEntries = TimeEntries.byBuilderEntries(current.entries)
+        current.ensureAtLeastOneContract(timeEntries.firstDate)
 
         return TimeSheet(
-            entries = realEntries,
-            contracts = transformContracts(contracts, realEntries),
+            entries = timeEntries,
+            contracts = transformContracts(current.contracts, timeEntries),
         )
     }
-
 }
