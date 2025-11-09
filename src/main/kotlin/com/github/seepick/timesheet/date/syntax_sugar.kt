@@ -1,12 +1,5 @@
 package com.github.seepick.timesheet.date
 
-import com.github.seepick.timesheet.date.Day.friday
-import com.github.seepick.timesheet.date.Day.monday
-import com.github.seepick.timesheet.date.Day.saturday
-import com.github.seepick.timesheet.date.Day.sunday
-import com.github.seepick.timesheet.date.Day.thursday
-import com.github.seepick.timesheet.date.Day.tuesday
-import com.github.seepick.timesheet.date.Day.wednesday
 import com.github.seepick.timesheet.dsl.MonthDsl
 import com.github.seepick.timesheet.dsl.WorkDayDsl
 import com.github.seepick.timesheet.dsl.YearDsl
@@ -30,10 +23,10 @@ fun YearDsl.october(code: MonthDsl.() -> Unit) = month(Month.OCTOBER, code)
 fun YearDsl.november(code: MonthDsl.() -> Unit) = month(Month.NOVEMBER, code)
 fun YearDsl.december(code: MonthDsl.() -> Unit) = month(Month.DECEMBER, code)
 
-fun MonthDsl.monday(day: Int, code: WorkDayDsl.() -> Unit) = day(monday, day, code)
-fun MonthDsl.tuesday(day: Int, code: WorkDayDsl.() -> Unit) = day(tuesday, day, code)
-fun MonthDsl.wednesday(day: Int, code: WorkDayDsl.() -> Unit) = day(wednesday, day, code)
-fun MonthDsl.thursday(day: Int, code: WorkDayDsl.() -> Unit) = day(thursday, day, code)
-fun MonthDsl.friday(day: Int, code: WorkDayDsl.() -> Unit) = day(friday, day, code)
-fun MonthDsl.saturday(day: Int, code: WorkDayDsl.() -> Unit) = day(saturday, day, code)
-fun MonthDsl.sunday(day: Int, code: WorkDayDsl.() -> Unit) = day(sunday, day, code)
+fun MonthDsl.monday(day: Int, code: WorkDayDsl.() -> Unit) = day(WorkDay.monday, day, code)
+fun MonthDsl.tuesday(day: Int, code: WorkDayDsl.() -> Unit) = day(WorkDay.tuesday, day, code)
+fun MonthDsl.wednesday(day: Int, code: WorkDayDsl.() -> Unit) = day(WorkDay.wednesday, day, code)
+fun MonthDsl.thursday(day: Int, code: WorkDayDsl.() -> Unit) = day(WorkDay.thursday, day, code)
+fun MonthDsl.friday(day: Int, code: WorkDayDsl.() -> Unit) = day(WorkDay.friday, day, code)
+fun MonthDsl.saturday(day: Int, code: WorkDayDsl.() -> Unit) = day(Day.saturday, day, code)
+fun MonthDsl.sunday(day: Int, code: WorkDayDsl.() -> Unit) = day(Day.sunday, day, code)

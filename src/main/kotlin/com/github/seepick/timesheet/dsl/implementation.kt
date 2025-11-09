@@ -117,7 +117,7 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         internalDayOff(dateByCurrentSetYearAndMonth(day))
 
     override fun dayOff(dayLabel: WorkDay, day: Int): DayOffDsl {
-        verifyDayLabel(dayLabel.day, day)
+        verifyDayLabel(dayLabel, day)
         return dayOff(day)
     }
 

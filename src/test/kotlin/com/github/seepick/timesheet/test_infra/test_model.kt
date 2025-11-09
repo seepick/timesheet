@@ -9,10 +9,8 @@ import com.github.seepick.timesheet.tags.Tags
 import com.github.seepick.timesheet.timesheet.OffReason
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
-import io.kotest.property.arbitrary.enum
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.next
-import io.kotest.property.arbitrary.set
 import java.time.LocalTime
 
 open class TestableTag(
@@ -45,9 +43,14 @@ val OffReasons.Companion.any: OffReasons
 
 fun Arb.Companion.workContract() = arbitrary {
     WorkContract(
-        daysOff = Arb.set(Arb.enum<WorkDay>(), 0..3).next(),
+        daysOff = workDays().next(),
         hoursPerWeek = int(min = 10, max = 50).next()
     )
+}
+
+fun Arb.Companion.workDays() = arbitrary {
+    val amount = int(min = 0, max = 3).next()
+    WorkDay.all.shuffled().take(amount).toSet()
 }
 
 fun Arb.Companion.timeRange() = arbitrary {

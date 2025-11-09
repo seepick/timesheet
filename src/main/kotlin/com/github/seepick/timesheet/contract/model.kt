@@ -13,7 +13,8 @@ data class WorkContract(
     companion object {
         val default = WorkContract(emptySet(), 38)
     }
-    val hoursPerDay = hoursPerWeek / (WorkDay.entries.size - daysOff.size).toDouble()
+
+    val hoursPerDay = hoursPerWeek / (5 - daysOff.size).toDouble()
 }
 
 data class RangedWorkContract(

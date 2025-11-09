@@ -2,24 +2,52 @@ package com.github.seepick.timesheet.date
 
 import java.time.DayOfWeek
 
-@Suppress("EnumEntryName")
-enum class WorkDay(val javaDay: DayOfWeek, val day: Day) {
-    monday(DayOfWeek.MONDAY, Day.monday),
-    tuesday(DayOfWeek.TUESDAY, Day.tuesday),
-    wednesday(DayOfWeek.WEDNESDAY, Day.wednesday),
-    thursday(DayOfWeek.THURSDAY, Day.thursday),
-    friday(DayOfWeek.FRIDAY, Day.friday),
+@Suppress("ClassName")
+sealed interface Day {
+    data object saturday : Day {
+        override val javaDay: DayOfWeek = DayOfWeek.SATURDAY
+    }
+
+    data object sunday : Day {
+        override val javaDay: DayOfWeek = DayOfWeek.SUNDAY
+    }
+
+    companion object {
+        val all: List<Day> = listOf(
+            WorkDay.monday, WorkDay.tuesday, WorkDay.wednesday, WorkDay.thursday, WorkDay.friday, saturday, sunday
+        )
+    }
+
+    val javaDay: DayOfWeek
 }
 
-@Suppress("EnumEntryName")
-enum class Day(val javaDay: DayOfWeek) {
-    monday(DayOfWeek.MONDAY),
-    tuesday(DayOfWeek.TUESDAY),
-    wednesday(DayOfWeek.WEDNESDAY),
-    thursday(DayOfWeek.THURSDAY),
-    friday(DayOfWeek.FRIDAY),
-    saturday(DayOfWeek.SATURDAY),
-    sunday(DayOfWeek.SUNDAY),
+@Suppress("ClassName")
+sealed interface WorkDay : Day {
+    data object monday : WorkDay {
+        override val javaDay: DayOfWeek = DayOfWeek.MONDAY
+    }
+
+    data object tuesday : WorkDay {
+        override val javaDay: DayOfWeek = DayOfWeek.TUESDAY
+    }
+
+    data object wednesday : WorkDay {
+        override val javaDay: DayOfWeek = DayOfWeek.WEDNESDAY
+    }
+
+    data object thursday : WorkDay {
+        override val javaDay: DayOfWeek = DayOfWeek.THURSDAY
+    }
+
+    data object friday : WorkDay {
+        override val javaDay: DayOfWeek = DayOfWeek.FRIDAY
+    }
+
+    companion object {
+        val all: List<WorkDay> = listOf(
+            monday, tuesday, wednesday, thursday, friday
+        )
+    }
 }
 
 val DayOfWeek.isWeekDay: Boolean
@@ -29,6 +57,7 @@ val DayOfWeek.isWeekDay: Boolean
         DayOfWeek.WEDNESDAY,
         DayOfWeek.THURSDAY,
         DayOfWeek.FRIDAY -> true
+
         DayOfWeek.SATURDAY,
         DayOfWeek.SUNDAY -> false
     }

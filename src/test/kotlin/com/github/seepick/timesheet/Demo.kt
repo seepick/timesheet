@@ -5,11 +5,13 @@ import com.github.seepick.timesheet.DemoTags.biz
 import com.github.seepick.timesheet.DemoTags.code
 import com.github.seepick.timesheet.DemoTags.meet
 import com.github.seepick.timesheet.DemoTags.orga
-import com.github.seepick.timesheet.date.WorkDay.*
-import com.github.seepick.timesheet.dsl.WorkDayDsl
+import com.github.seepick.timesheet.date.WorkDay.friday
+import com.github.seepick.timesheet.date.WorkDay.tuesday
 import com.github.seepick.timesheet.date.monday
 import com.github.seepick.timesheet.date.november
+import com.github.seepick.timesheet.date.rd
 import com.github.seepick.timesheet.date.th
+import com.github.seepick.timesheet.dsl.WorkDayDsl
 import com.github.seepick.timesheet.dsl.timesheet
 import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.report.calculate
@@ -47,13 +49,11 @@ fun main() {
     timesheet(DemoTags, DemoOffReasons) {
         year(2025) {
             november {
-                day(1) {
+                monday(3.rd) {
                     contract {
                         hoursPerWeek = 32
                         dayOff = friday
                     }
-                }
-                monday(10.th) {
                     "9-" - "self admin" - orga
                     standup() // enhance DSL with custom extensions, nice :)
                     "-12:30" - "commons tests" - code
@@ -61,7 +61,7 @@ fun main() {
                     "14:30-" - "commons tests" - code
                     "16-17" - "story alignment" - meet
                 }
-                dayOff(tuesday, 11.th) becauseOf sickness
+                dayOff(tuesday, 4.th) becauseOf sickness
             }
         }
     }.calculate().printCli()
