@@ -4,31 +4,11 @@ package com.github.seepick.timesheet.dsl
 
 import com.github.seepick.timesheet.contract.ContractDsl
 import com.github.seepick.timesheet.date.Day
-import com.github.seepick.timesheet.timesheet.OffReason
-import com.github.seepick.timesheet.tags.Tag
-import com.github.seepick.timesheet.timesheet.TimeSheet
 import com.github.seepick.timesheet.date.WorkDay
 import com.github.seepick.timesheet.off.DayOffDsl
-import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.tags.TagDsl
-import com.github.seepick.timesheet.tags.Tags
+import com.github.seepick.timesheet.timesheet.OffReason
 import java.time.Month
-
-fun <TAGS : Tags, OFF : OffReasons> timesheet(
-    tags: TAGS,
-    offs: OFF,
-    entryCode: TimeSheetDsl.() -> Unit
-): TimeSheet {
-    val context = TimeSheetContext(tags, offs)
-    val dsl = DslImplementation(context)
-    dsl.entryCode()
-    return dsl.build()
-}
-
-class TimeSheetContext<TAGS : Tags, OFF : OffReasons>(
-    val tags: TAGS,
-    val offs: OFF,
-)
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
@@ -37,7 +17,6 @@ annotation class TimesheetAppDsl
 @TimesheetAppDsl
 interface TimeSheetDsl {
     fun year(year: Int, code: YearDsl.() -> Unit)
-
     infix fun DayOffDsl.becauseOf(reason: OffReason)
 }
 
