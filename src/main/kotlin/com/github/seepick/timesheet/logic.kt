@@ -14,7 +14,9 @@ class TimeCalculator(
         val daysTotal = ChronoUnit.DAYS.between(sheet.startDate, clock.currentLocalDate())
         val daysToWork = 0.rangeTo(daysTotal)
             .map { sheet.startDate.plusDays(it) }
-            .filter { it.dayOfWeek.isWeekDay && !sheet.freeDaysContains(it.dayOfWeek) }
+            .filter { it.dayOfWeek.isWeekDay
+//                    && !sheet.freeDaysContains(it.dayOfWeek) // FIXME !!! implement contract thing
+            }
             .count() - sheet.entries.dayOffEntries.count()
         val totalMinutesToWork = (daysToWork * sheet.hoursToWorkPerDay * minutesInHour).toLong()
         val totalMinutesWorked = sheet.entries.workEntries.sumOf { it.duration }

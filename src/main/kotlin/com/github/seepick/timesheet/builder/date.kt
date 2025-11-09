@@ -44,7 +44,7 @@ sealed class TimeRangeSpec {
             val result = if(startPart.isNotEmpty() && endPart.isNotEmpty()) {
                 val start = parseTimePart(startPart)
                 val end = parseTimePart(endPart)
-                // FIXME also check start is before when dynamically build
+                // TODO also check start is before when dynamically build
                 if(!start.isBefore(end)) {
                     throw TimeParseException("Start ($startPart) must be before end ($endPart) for [$input]!")
                 }

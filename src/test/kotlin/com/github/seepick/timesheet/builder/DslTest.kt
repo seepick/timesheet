@@ -1,12 +1,18 @@
 package com.github.seepick.timesheet.builder
 
+import com.github.seepick.timesheet.DateRange
 import com.github.seepick.timesheet.DayOffEntry
 import com.github.seepick.timesheet.EntryDateRange
 import com.github.seepick.timesheet.OffReason
+import com.github.seepick.timesheet.RangedWorkContract
 import com.github.seepick.timesheet.Tag
 import com.github.seepick.timesheet.TestConstants
 import com.github.seepick.timesheet.TimeEntries
 import com.github.seepick.timesheet.TimeRange
+import com.github.seepick.timesheet.WorkContract
+import com.github.seepick.timesheet.WorkDay
+import com.github.seepick.timesheet.WorkDay.Friday
+import com.github.seepick.timesheet.WorkDay.Monday
 import com.github.seepick.timesheet.WorkDayEntry
 import com.github.seepick.timesheet.until
 import com.github.seepick.timesheet.any
@@ -20,16 +26,29 @@ import com.github.seepick.timesheet.someWorkingDay
 import com.github.seepick.timesheet.tag1
 import com.github.seepick.timesheet.tag2
 import com.github.seepick.timesheet.timesheetAny
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.types.shouldBeSameInstanceAs
+import org.jetbrains.annotations.Contract
+import org.junit.jupiter.api.assertThrows
+import java.time.DayOfWeek
+import java.time.DayOfWeek.MONDAY
+import java.time.DayOfWeek.SATURDAY
+import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
+import java.time.Month.JULY
+import java.time.Month.NOVEMBER
+import java.time.Month.SEPTEMBER
+import kotlin.contracts.contract
 
 class BuilderTest : DescribeSpec({
 
@@ -44,7 +63,7 @@ class BuilderTest : DescribeSpec({
     val description = "test description"
     val anyDescription = "any description"
     val anyYear = 2010
-    val anyMonth = Month.JULY
+    val anyMonth = JULY
     val someTag = Tag.any
     val tag1 = Tag.tag1
     val tag2 = Tag.tag2
@@ -137,7 +156,8 @@ class BuilderTest : DescribeSpec({
                 someWorkingDay(date = conflictingDate)
                 someWorkingDay(date = conflictingDate)
 
-            }.message shouldContain conflictingDate.year.toString().substring(2) shouldContain conflictingDate.monthValue.toString() shouldContain conflictingDate.dayOfMonth.toString()
+            }.message shouldContain conflictingDate.year.toString()
+                .substring(2) shouldContain conflictingDate.monthValue.toString() shouldContain conflictingDate.dayOfMonth.toString()
         }
         // TODO two day offs with same date
         // TODO 1 work day 1 day off; same date
@@ -238,7 +258,7 @@ class BuilderTest : DescribeSpec({
         it("range") {
             val sheet = timesheetAny {
                 year(2000) {
-                    month(Month.JULY) {
+                    month(JULY) {
                         someWorkingDay(1)
                         daysOff(2..3) becauseOf OffReason.any
                     }
@@ -248,8 +268,101 @@ class BuilderTest : DescribeSpec({
             sheet.entries shouldHaveSize 3
             sheet.entries[1].shouldBeInstanceOf<DayOffEntry>()
             sheet.entries[2].shouldBeInstanceOf<DayOffEntry>()
-            sheet.entries[1].day shouldBe LocalDate.of(2000, Month.JULY, 2)
-            sheet.entries[2].day shouldBe LocalDate.of(2000, Month.JULY, 3)
+            sheet.entries[1].day shouldBe LocalDate.of(2000, JULY, 2)
+            sheet.entries[2].day shouldBe LocalDate.of(2000, JULY, 3)
         }
     }
+    describe("day label") {
+        it("incorrect fails") {
+            shouldThrow<IllegalArgumentException> {
+                timesheetAny {
+                    year(2025) {
+                        month(NOVEMBER) {
+                            day(SATURDAY, 9) { // NO! it's sunday
+                                "10-12" - "msg" - Tag.any
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        it("correct") {
+            val sheet = timesheetAny {
+                year(2025) {
+                    month(NOVEMBER) {
+                        day(SUNDAY, 9) {
+                            "10-12" - "msg" - Tag.any
+                        }
+                    }
+                }
+            }
+            sheet.entries.shouldBeSingleton()
+        }
+    }
+    describe("contract") {
+        it("skipping will get default") {
+            val sheet = timesheetAny {
+                someWorkingDay(someDate) {
+                    someWorkEntry()
+                }
+            }
+            sheet.contracts.shouldBeSingleton().first().contract shouldBe WorkContract.default
+        }
+        it("custom contract") {
+            val sheet = timesheetAny {
+                someWorkingDay(someDate) {
+                    workContract {
+                        hoursPerWeek = 10
+                        dayOff = Friday
+                    }
+                    someWorkEntry()
+                }
+            }
+
+            sheet.contracts.shouldBeSingleton().first().contract shouldBe WorkContract(
+                daysOff = setOf(Friday),
+                hoursPerWeek = 10
+            )
+        }
+        it("custom contract test dates") {
+            val sheet = timesheetAny {
+                year(2000) {
+                    month(SEPTEMBER) {
+                        day(1) {
+                            workContract {
+                                hoursPerWeek = 10
+                                daysOff = setOf(Monday)
+                            }
+                            "9-10" - "x" - Tag.any
+                        }
+                    }
+                }
+            }
+            sheet.contracts.shouldBeSingleton().first().dateRange shouldBe DateRange(
+                startDate = LocalDate.parse("2000-09-01"),
+                endDate = LocalDate.parse("2000-09-01")
+            )
+        }
+    }
+    /*
+    year(2000) {
+        month(september) {
+            day(monday, 1st) {
+                contract {
+                    hoursPerWeek = 32
+                    daysOff = friday
+                }
+                // TODO IDEA support different time definitions
+                13 to 15.30 - "worked on slides" - orga
+            }
+            day(mon, 2st) {
+                contract {
+                    hoursPerWeek = 38
+                    daysOff = none
+                }
+                14-15 - "foo" - meet
+            }
+        }
+    }
+     */
 })

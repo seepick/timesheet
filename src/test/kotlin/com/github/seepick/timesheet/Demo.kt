@@ -16,9 +16,7 @@ import java.time.Month
 // 1. a sample day
 // ====================================================================================================================
 fun main() {
-    timesheet(DemoTags, DemoOffReasons, {
-        daysOff += WorkDay.Friday
-    }) {
+    timesheet(DemoTags, DemoOffReasons) {
         year(2025) {
             month(Month.OCTOBER) {
                 day(1) {

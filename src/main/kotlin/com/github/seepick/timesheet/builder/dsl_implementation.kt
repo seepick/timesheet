@@ -1,6 +1,8 @@
 package com.github.seepick.timesheet.builder
 
+import com.github.seepick.timesheet.WorkContract
 import com.github.seepick.timesheet.DayOffEntry
+import com.github.seepick.timesheet.DslWorkContract
 import com.github.seepick.timesheet.EntryDateRange
 import com.github.seepick.timesheet.InputValidationException
 import com.github.seepick.timesheet.OffReason
@@ -11,23 +13,47 @@ import com.github.seepick.timesheet.TimeRange
 import com.github.seepick.timesheet.TimeSheet
 import com.github.seepick.timesheet.WorkDay
 import com.github.seepick.timesheet.WorkDayEntry
-import java.lang.IllegalStateException
+import com.github.seepick.timesheet.transformContracts
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
+import kotlin.IllegalStateException
 
 internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private val context: TimeSheetContext<TAGS, OFFS>
 ) :
-    TimeSheetInitDsl, TimeSheetDsl,
+    TimeSheetDsl,
+    ContractDsl,
     WorkDayDsl, DayOffDsl, PostAboutDsl,
     YearDsl, YearMonthDsl {
 
-    override var daysOff = mutableSetOf<WorkDay>()
     private val entries = mutableListOf<BuilderEntry>()
     private lateinit var currentDay: LocalDate
     private lateinit var currentEntry: BuilderEntry
     private var currentYear = -1 // Int not possible to do lateinit :-/
     private lateinit var currentMonth: Month
+    private val contracts = mutableListOf<DslWorkContract>()
+
+    // contract DSL
+    // ================================================================================================
+
+    override var hoursPerWeek = WorkContract.default.hoursPerWeek
+
+    override var dayOff: WorkDay
+        get() = if (daysOff.size == 1) daysOff.first() else throw IllegalStateException("Expected to be 1 dayOff but there were: $daysOff")
+        set(value) {
+            daysOff = setOf(value)
+        }
+
+    override var daysOff: Set<WorkDay> = WorkContract.default.daysOff
+
+    override fun workContract(code: ContractDsl.() -> Unit) {
+        code()
+        contracts += DslWorkContract(
+            contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek),
+            definedAt = currentDay
+        )
+    }
 
     // MAIN TIMESHEET DSL
     // ================================================================================================
@@ -50,7 +76,14 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         }
         currentDay = newDate
         code()
+    }
 
+    override fun day(dayLabel: DayOfWeek, day: Int, code: WorkDayDsl.() -> Unit) {
+        val currentDate = LocalDate.of(currentYear, currentMonth, day)
+        if (currentDate.dayOfWeek != dayLabel) {
+            throw IllegalArgumentException("Current date [$currentDate] with day [${currentDate.dayOfWeek}] mismatches expected [$dayLabel]!")
+        }
+        day(day, code)
     }
 
     private fun dateByCurrentSetYearAndMonth(day: Int) =
@@ -69,9 +102,10 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     }
 
     override fun DayOffDsl.becauseOf(reason: OffReason) {
-        val entry = currentEntry as? ReasonableOffEntry ?: throw IllegalStateException("Expected entry to be reasonable, but was: $currentEntry")
+        val entry = currentEntry as? ReasonableOffEntry
+            ?: throw IllegalStateException("Expected entry to be reasonable, but was: $currentEntry")
         if (!context.offs.contains(reason)) {
-            // FIXME test whether contains off reason
+            // TODO test whether contains off reason
         }
         entry.reason = reason
     }
@@ -111,14 +145,14 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         val entry = currentEntry as BuilderWorkDayEntry
         allTags.forEach { tag ->
             if (!context.tags.contains(tag)) {
-                // FIXME test me; if configure no tags, and this tag requested doesnt exist; throw!
+                // TODO test me; if configure no tags, and this tag requested doesnt exist; throw!
             }
             entry.tags += tag
         }
     }
 
     override operator fun minus(tag: Tag) = tag(tag)
-    override fun minus(tags: List<Tag>)  = addTags(tags)
+    override fun minus(tags: List<Tag>) = addTags(tags)
 
 
     // BUILD
@@ -132,48 +166,69 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         } catch (e: InputValidationException) {
             throw BuilderException("Invalid timesheet defined: ${e.message}", e)
         }
+        if(contracts.isEmpty()) {
+            contracts += DslWorkContract(WorkContract.default, realEntries.firstDate)
+        }
+
         return TimeSheet(
-            freeDays = daysOff,
-            entries = realEntries
+            entries = realEntries,
+            contracts = transformContracts(contracts, realEntries),
         )
     }
 
     // ENTRY TRANSFORMATION
     // -------------------------------------------------------
 
-    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): List<TimeEntry> = when (this) {
-        is BuilderWorkDayEntry -> listOf(WorkDayEntry(
-            dateRange = EntryDateRange(
-                day = day,
-                timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
-            ),
-            about = about,
-            tags = tags
-        ))
-        is BuilderDayOffEntry -> listOf(DayOffEntry(
-            day = day,
-            reason = reason ?: throw BuilderException("no day off reason was given for: $this")
-        ))
-        is BuilderDaysOffEntry -> this.dates.map {
-            DayOffEntry(
-                day = it,
-                reason = reason ?: throw BuilderException("no day off reason was given for: $this")
+    private fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): List<TimeEntry> =
+        when (this) {
+            is BuilderWorkDayEntry -> listOf(
+                WorkDayEntry(
+                    dateRange = EntryDateRange(
+                        day = day,
+                        timeRange = transformTimeRange(timeRangeSpec, neighbours, day)
+                    ),
+                    about = about,
+                    tags = tags
+                )
             )
-        }
-    }
 
-    private fun transformTimeRange(timeRangeSpec: TimeRangeSpec, neighbours: Pair<BuilderEntry?, BuilderEntry?>, day: LocalDate): TimeRange =
+            is BuilderDayOffEntry -> listOf(
+                DayOffEntry(
+                    day = day,
+                    reason = reason ?: throw BuilderException("no day off reason was given for: $this")
+                )
+            )
+
+            is BuilderDaysOffEntry -> this.dates.map {
+                DayOffEntry(
+                    day = it,
+                    reason = reason ?: throw BuilderException("no day off reason was given for: $this")
+                )
+            }
+        }
+
+    private fun transformTimeRange(
+        timeRangeSpec: TimeRangeSpec,
+        neighbours: Pair<BuilderEntry?, BuilderEntry?>,
+        day: LocalDate
+    ): TimeRange =
         when (timeRangeSpec) {
             is TimeRangeSpec.ClosedRangeSpec -> timeRangeSpec.toTimeRange()
             is TimeRangeSpec.OpenStartRangeSpec -> transformOpenAndEndRange(true, timeRangeSpec, neighbours, day)
             is TimeRangeSpec.OpenEndRangeSpec -> transformOpenAndEndRange(false, timeRangeSpec, neighbours, day)
         }
 
-    private fun transformOpenAndEndRange(isStartOpen: Boolean, timeRangeSpec: TimeRangeSpec, neighbours: Pair<BuilderEntry?, BuilderEntry?>, day: LocalDate): TimeRange {
+    private fun transformOpenAndEndRange(
+        isStartOpen: Boolean,
+        timeRangeSpec: TimeRangeSpec,
+        neighbours: Pair<BuilderEntry?, BuilderEntry?>,
+        day: LocalDate
+    ): TimeRange {
         val label = if (isStartOpen) "start" else "end"
         val labelInversed = if (isStartOpen) "end" else "start"
         val labelNeighbour = if (isStartOpen) "previous" else "following"
-        val labelPrefix = "On ${day.toParsableDate()} an invalid open-$label-entry was created '${timeRangeSpec.toParseableString()}': "
+        val labelPrefix =
+            "On ${day.toParsableDate()} an invalid open-$label-entry was created '${timeRangeSpec.toParseableString()}': "
         val neighbour = if (isStartOpen) neighbours.first else neighbours.second ?: {
             throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to EXIST!")
         }
@@ -190,5 +245,6 @@ internal class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
             (timeRangeSpec as TimeRangeSpec.OpenEndRangeSpec).toTimeRange(end = (neighbour.timeRangeSpec as HasStartTime).start)
         }
     }
+
 
 }

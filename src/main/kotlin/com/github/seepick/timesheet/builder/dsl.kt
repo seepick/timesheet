@@ -6,6 +6,7 @@ import com.github.seepick.timesheet.OffReason
 import com.github.seepick.timesheet.Tag
 import com.github.seepick.timesheet.TimeSheet
 import com.github.seepick.timesheet.WorkDay
+import java.time.DayOfWeek
 import java.time.Month
 
 interface Tags {
@@ -25,18 +26,15 @@ interface OffReasons {
 internal class TimeSheetContext<TAGS : Tags, OFF : OffReasons>(
     val tags: TAGS,
     val offs: OFF,
-    val init: TimeSheetInitDsl.() -> Unit = {}
 )
 
 fun <TAGS : Tags, OFF : OffReasons> timesheet(
     tags: TAGS,
     offs: OFF,
-    init: TimeSheetInitDsl.() -> Unit = {},
     entryCode: TimeSheetDsl.() -> Unit
 ): TimeSheet {
-    val context = TimeSheetContext(tags, offs, init)
+    val context = TimeSheetContext(tags, offs)
     val dsl = DslImplementation(context)
-    context.init(dsl)
     dsl.entryCode()
     return dsl.build()
 }
@@ -44,10 +42,6 @@ fun <TAGS : Tags, OFF : OffReasons> timesheet(
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class TimesheetAppDsl
-
-interface TimeSheetInitDsl {
-    var daysOff: MutableSet<WorkDay>
-}
 
 @TimesheetAppDsl
 interface TimeSheetDsl {
@@ -61,8 +55,16 @@ interface YearDsl {
 }
 
 @TimesheetAppDsl
+interface ContractDsl {
+    var hoursPerWeek: Int
+    var dayOff: WorkDay
+    var daysOff: Set<WorkDay>
+}
+
+@TimesheetAppDsl
 interface YearMonthDsl {
     fun day(day: Int, code: WorkDayDsl.() -> Unit)
+    fun day(dayLabel: DayOfWeek, day: Int, code: WorkDayDsl.() -> Unit)
     fun dayOff(day: Int): DayOffDsl
     fun daysOff(days: IntRange): DayOffDsl
 
@@ -73,6 +75,7 @@ interface YearMonthDsl {
 
 @TimesheetAppDsl
 interface WorkDayDsl {
+    fun workContract(code: ContractDsl.() -> Unit)
     infix fun String.about(description: String): PostAboutDsl
     operator fun String.minus(description: String): PostAboutDsl
 }

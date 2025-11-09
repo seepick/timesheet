@@ -21,14 +21,14 @@ enum class WorkDay(val allDays: DayOfWeek) {
 }
 
 data class TimeSheet(
-    val freeDays: Set<WorkDay>,
     val entries: TimeEntries,
+    val contracts: List<RangedWorkContract>,
 ) {
-    val hoursToWorkPerDay = 8
+    val hoursToWorkPerDay = 8 // FIXME !!! change to: hours to work per week; based on that, calculate back per day
     val startDate: LocalDate = entries.firstDate
-    private val freeDaysJavaType = freeDays.map { it.allDays }
+//    private val freeDaysJavaType = freeDays.map { it.allDays }
 
-    fun freeDaysContains(day: DayOfWeek) = freeDaysJavaType.contains(day)
+//    fun freeDaysContains(day: DayOfWeek) = freeDaysJavaType.contains(day)
 }
 
 class TimeEntries private constructor(
@@ -59,7 +59,8 @@ class TimeEntries private constructor(
         }
     }
 
-    val firstDate: LocalDate = (entries.first() as WorkDayEntry).dateRange.day
+    val firstDate: LocalDate = entries.first().day
+    val lastDate: LocalDate = entries.last().day
     val workEntries = entries.filterIsInstance<WorkDayEntry>()
     val dayOffEntries = entries.filterIsInstance<DayOffEntry>()
 
@@ -68,7 +69,7 @@ class TimeEntries private constructor(
 
 open class InputValidationException(message: String) : Exception(message)
 
-sealed class TimeEntry : TimeEntryFields
+sealed interface TimeEntry : TimeEntryFields
 
 interface TimeEntryFields {
     val day: LocalDate
@@ -78,7 +79,7 @@ data class WorkDayEntry(
     val dateRange: EntryDateRange,
     val about: String,
     val tags: Set<Tag>,
-) : TimeEntry(), HasTimeRange by dateRange {
+) : TimeEntry, HasTimeRange by dateRange {
 
     val duration: Minutes = dateRange.duration
     override val day: LocalDate = dateRange.day
@@ -119,6 +120,12 @@ data class EntryDateRange(
     val duration: Minutes = timeRange.duration
 }
 
+/** inclusive **/
+data class DateRange(
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
 data class TimeRange(
     val start: LocalTime,
     val end: LocalTime,
@@ -151,4 +158,4 @@ infix fun Int.until(m: Int) = TimeRange(LocalTime.of(this, 0), LocalTime.of(m, 0
 data class DayOffEntry(
     override val day: LocalDate,
     val reason: OffReason,
-) : TimeEntry()
+) : TimeEntry
