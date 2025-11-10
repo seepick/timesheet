@@ -5,37 +5,21 @@ import com.github.seepick.timesheet.DemoTags.biz
 import com.github.seepick.timesheet.DemoTags.code
 import com.github.seepick.timesheet.DemoTags.meet
 import com.github.seepick.timesheet.DemoTags.orga
-import com.github.seepick.timesheet.builder.OffReasons
-import com.github.seepick.timesheet.builder.WorkDayDsl
-import com.github.seepick.timesheet.builder.Tags
-import com.github.seepick.timesheet.builder.timesheet
-import com.github.seepick.timesheet.report.ReportContext
+import com.github.seepick.timesheet.date.WorkDay.friday
+import com.github.seepick.timesheet.date.WorkDay.tuesday
+import com.github.seepick.timesheet.date.monday
+import com.github.seepick.timesheet.date.november
+import com.github.seepick.timesheet.date.rd
+import com.github.seepick.timesheet.date.th
+import com.github.seepick.timesheet.dsl.WorkDayDsl
+import com.github.seepick.timesheet.dsl.timesheet
+import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.report.calculate
-import java.time.Month
+import com.github.seepick.timesheet.tags.NamedTag
+import com.github.seepick.timesheet.tags.Tags
+import com.github.seepick.timesheet.timesheet.NamedOffReason
 
-// 1. a sample day
-// ====================================================================================================================
-fun main() {
-    timesheet(DemoTags, DemoOffReasons, {
-        daysOff += WorkDay.Friday
-    }) {
-        year(2025) {
-            month(Month.OCTOBER) {
-                day(1) {
-                    "9-" - "self admin" - orga
-                    standup() // enhance DSL with custom extensions, nice :)
-                    "-12:30" - "commons tests" - code
-                    "13:30-" - "refine stories" - biz
-                    "14:30-" - "commons tests" - code
-                    "16-17" - "story alignment" - meet
-                }
-                dayOff(2) becauseOf sickness
-            }
-        }
-    }.calculate().printCli()
-}
-
-// 2. define context
+// 1. define context
 // ====================================================================================================================
 
 private object DemoTags : Tags {
@@ -59,15 +43,26 @@ private fun WorkDayDsl.standup() {
     "10-10:30" - "standup" - meet
 }
 
-// (3. hook into main app)
+// 2. track times and print report
 // ====================================================================================================================
-class MyAutoSheet : com.github.seepick.timesheet.AutoSheet {
-    override fun provide() = timesheet(DemoTags, DemoOffReasons) {
-        // ... define your times here ...
-    }
-
-    override fun chooseReport(report: ReportContext) {
-        report.printCli()
-        // or: report.showNotification()
-    }
+fun main() {
+    timesheet(DemoTags, DemoOffReasons) {
+        year(2025) {
+            november {
+                monday(3.rd) {
+                    contract {
+                        hoursPerWeek = 32
+                        dayOff = friday
+                    }
+                    "9-" - "self admin" - orga
+                    standup() // enhance DSL with custom extensions, nice :)
+                    "-12:30" - "commons tests" - code
+                    "13:30-" - "refine stories" - biz
+                    "14:30-" - "commons tests" - code
+                    "16-17" - "story alignment" - meet
+                }
+                dayOff(tuesday, 4.th) becauseOf sickness
+            }
+        }
+    }.calculate().printCli()
 }

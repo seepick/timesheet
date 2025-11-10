@@ -1,15 +1,16 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.test_infra
 
-import com.github.seepick.timesheet.builder.TimeSheetDsl
-import com.github.seepick.timesheet.builder.WorkDayDsl
-import com.github.seepick.timesheet.builder.YearMonthDsl
+import com.github.seepick.timesheet.dsl.MonthDsl
+import com.github.seepick.timesheet.dsl.TimeSheetDsl
+import com.github.seepick.timesheet.dsl.WorkDayDsl
+import com.github.seepick.timesheet.timesheet.OffReason
 import java.time.LocalDate
 import java.time.Month
 
 private val anyYear = 2000
 private val anyMonth = Month.JANUARY
 
-fun TimeSheetDsl.anyYearMonth(code: YearMonthDsl.() -> Unit) {
+fun TimeSheetDsl.anyYearMonth(code: MonthDsl.() -> Unit) {
     year(anyYear) {
         month(anyMonth, code)
     }
@@ -25,7 +26,10 @@ fun TimeSheetDsl.dayOff(date: LocalDate = TestConstants.someDate, reason: OffRea
 
 fun TimeSheetDsl.anyWorkingDay() = someWorkingDay()
 
-fun TimeSheetDsl.someWorkingDay(date: LocalDate = TestConstants.someDate, dayDsl: WorkDayDsl.() -> Unit = { someWorkEntry() }) {
+fun TimeSheetDsl.someWorkingDay(
+    date: LocalDate = TestConstants.someDate,
+    dayDsl: WorkDayDsl.() -> Unit = { someWorkEntry() }
+) {
     year(date.year) {
         month(date.month) {
             day(date.dayOfMonth) {
@@ -45,7 +49,7 @@ fun TimeSheetDsl.someDayOff(date: LocalDate = TestConstants.someDate) {
     }
 }
 
-fun YearMonthDsl.someWorkingDay(day: Int) {
+fun MonthDsl.someWorkingDay(day: Int) {
     day(day) {
         someWorkEntry()
     }
@@ -56,8 +60,8 @@ fun WorkDayDsl.someWorkEntry(timeRange: String = someTimeRange, about: String = 
     timeRange about about
 }
 
-val WorkDayDsl.someTimeRange: String get() = "10-11"
+const val someTimeRange = "10-11"
 
-fun YearMonthDsl.someDayOff(day: Int) {
+fun MonthDsl.someDayOff(day: Int) {
     dayOff(day) becauseOf OffReason.any
 }

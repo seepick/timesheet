@@ -1,26 +1,38 @@
 package com.github.seepick.timesheet.builder
 
-import com.github.seepick.timesheet.DayOffEntry
-import com.github.seepick.timesheet.EntryDateRange
-import com.github.seepick.timesheet.OffReason
-import com.github.seepick.timesheet.Tag
-import com.github.seepick.timesheet.TestConstants
-import com.github.seepick.timesheet.TimeEntries
-import com.github.seepick.timesheet.TimeRange
-import com.github.seepick.timesheet.WorkDayEntry
-import com.github.seepick.timesheet.until
-import com.github.seepick.timesheet.any
-import com.github.seepick.timesheet.anyWorkingDay
-import com.github.seepick.timesheet.dayOff
-import com.github.seepick.timesheet.failingTimesheet
-import com.github.seepick.timesheet.shouldHaveSingleEntryWithDate
-import com.github.seepick.timesheet.someWorkEntry
-import com.github.seepick.timesheet.someDayOff
-import com.github.seepick.timesheet.someWorkingDay
-import com.github.seepick.timesheet.tag1
-import com.github.seepick.timesheet.tag2
-import com.github.seepick.timesheet.timesheetAny
+import com.github.seepick.timesheet.contract.WorkContract
+import com.github.seepick.timesheet.date.DateRange
+import com.github.seepick.timesheet.date.TimeRange
+import com.github.seepick.timesheet.date.WorkDay.friday
+import com.github.seepick.timesheet.date.WorkDay.monday
+import com.github.seepick.timesheet.date.february
+import com.github.seepick.timesheet.date.november
+import com.github.seepick.timesheet.date.saturday
+import com.github.seepick.timesheet.date.sunday
+import com.github.seepick.timesheet.date.toParsableDate
+import com.github.seepick.timesheet.date.until
+import com.github.seepick.timesheet.tags.Tag
+import com.github.seepick.timesheet.test_infra.TestConstants
+import com.github.seepick.timesheet.test_infra.any
+import com.github.seepick.timesheet.test_infra.anyWorkingDay
+import com.github.seepick.timesheet.test_infra.dayOff
+import com.github.seepick.timesheet.test_infra.failingTimesheet
+import com.github.seepick.timesheet.test_infra.shouldHaveSingleEntryWithDate
+import com.github.seepick.timesheet.test_infra.someDayOff
+import com.github.seepick.timesheet.test_infra.someWorkEntry
+import com.github.seepick.timesheet.test_infra.someWorkingDay
+import com.github.seepick.timesheet.test_infra.tag1
+import com.github.seepick.timesheet.test_infra.tag2
+import com.github.seepick.timesheet.test_infra.timesheetAny
+import com.github.seepick.timesheet.timesheet.DayOffEntry
+import com.github.seepick.timesheet.timesheet.EntryDateRange
+import com.github.seepick.timesheet.timesheet.OffReason
+import com.github.seepick.timesheet.timesheet.TimeEntries
+import com.github.seepick.timesheet.timesheet.WorkDayEntry
+import com.github.seepick.timesheet.timesheet.byTimeEntries
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -29,7 +41,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.Month
+import java.time.Month.JULY
+import java.time.Month.NOVEMBER
+import java.time.Month.SEPTEMBER
 
 class BuilderTest : DescribeSpec({
 
@@ -44,7 +58,7 @@ class BuilderTest : DescribeSpec({
     val description = "test description"
     val anyDescription = "any description"
     val anyYear = 2010
-    val anyMonth = Month.JULY
+    val anyMonth = JULY
     val someTag = Tag.any
     val tag1 = Tag.tag1
     val tag2 = Tag.tag2
@@ -79,7 +93,7 @@ class BuilderTest : DescribeSpec({
                 }
             }
 
-            sheet.entries shouldBe TimeEntries.newValidatedOrThrow(
+            sheet.entries shouldBe TimeEntries.byTimeEntries(
                 listOf(
                     WorkDayEntry(
                         dateRange = EntryDateRange(someDate, TimeRange(timeStart, timeEnd)),
@@ -137,7 +151,8 @@ class BuilderTest : DescribeSpec({
                 someWorkingDay(date = conflictingDate)
                 someWorkingDay(date = conflictingDate)
 
-            }.message shouldContain conflictingDate.year.toString().substring(2) shouldContain conflictingDate.monthValue.toString() shouldContain conflictingDate.dayOfMonth.toString()
+            }.message shouldContain conflictingDate.year.toString()
+                .substring(2) shouldContain conflictingDate.monthValue.toString() shouldContain conflictingDate.dayOfMonth.toString()
         }
         // TODO two day offs with same date
         // TODO 1 work day 1 day off; same date
@@ -163,7 +178,7 @@ class BuilderTest : DescribeSpec({
         it("When add work-day Then set date correctly") {
             timesheetAny {
                 year(2003) {
-                    month(Month.of(2)) {
+                    february {
                         day(1) {
                             someWorkEntry()
                         }
@@ -238,7 +253,7 @@ class BuilderTest : DescribeSpec({
         it("range") {
             val sheet = timesheetAny {
                 year(2000) {
-                    month(Month.JULY) {
+                    month(JULY) {
                         someWorkingDay(1)
                         daysOff(2..3) becauseOf OffReason.any
                     }
@@ -248,8 +263,101 @@ class BuilderTest : DescribeSpec({
             sheet.entries shouldHaveSize 3
             sheet.entries[1].shouldBeInstanceOf<DayOffEntry>()
             sheet.entries[2].shouldBeInstanceOf<DayOffEntry>()
-            sheet.entries[1].day shouldBe LocalDate.of(2000, Month.JULY, 2)
-            sheet.entries[2].day shouldBe LocalDate.of(2000, Month.JULY, 3)
+            sheet.entries[1].day shouldBe LocalDate.of(2000, JULY, 2)
+            sheet.entries[2].day shouldBe LocalDate.of(2000, JULY, 3)
         }
     }
+    describe("day label") {
+        it("incorrect fails") {
+            shouldThrow<IllegalArgumentException> {
+                timesheetAny {
+                    year(2025) {
+                        november {
+                            saturday(9) { // NO! it's sunday
+                                "10-12" - "msg" - Tag.any
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        it("correct") {
+            val sheet = timesheetAny {
+                year(2025) {
+                    month(NOVEMBER) {
+                        sunday(9) {
+                            "10-12" - "msg" - Tag.any
+                        }
+                    }
+                }
+            }
+            sheet.entries.shouldBeSingleton()
+        }
+    }
+    describe("contract") {
+        it("skipping will get default") {
+            val sheet = timesheetAny {
+                someWorkingDay(someDate) {
+                    someWorkEntry()
+                }
+            }
+            sheet.contracts.shouldBeSingleton().first().contract shouldBe WorkContract.default
+        }
+        it("custom contract") {
+            val sheet = timesheetAny {
+                someWorkingDay(someDate) {
+                    contract {
+                        hoursPerWeek = 10
+                        dayOff = friday
+                    }
+                    someWorkEntry()
+                }
+            }
+
+            sheet.contracts.shouldBeSingleton().first().contract shouldBe WorkContract(
+                daysOff = setOf(friday),
+                hoursPerWeek = 10
+            )
+        }
+        it("custom contract test dates") {
+            val sheet = timesheetAny {
+                year(2000) {
+                    month(SEPTEMBER) {
+                        day(1) {
+                            contract {
+                                hoursPerWeek = 10
+                                daysOff = setOf(monday)
+                            }
+                            "9-10" - "x" - Tag.any
+                        }
+                    }
+                }
+            }
+            sheet.contracts.shouldBeSingleton().first().dateRange shouldBe DateRange(
+                startDate = LocalDate.parse("2000-09-01"),
+                endDate = LocalDate.parse("2000-09-01")
+            )
+        }
+    }
+    /*
+    year(2000) {
+        month(september) {
+            day(monday, 1st) {
+                contract {
+                    hoursPerWeek = 32
+                    daysOff = friday
+                }
+                // TODO IDEA support different time definitions
+                13 to 15.30 - "worked on slides" - orga
+            }
+            day(mon, 2st) {
+                contract {
+                    hoursPerWeek = 38
+                    daysOff = none
+                }
+                14-15 - "foo" - meet
+            }
+        }
+    }
+     */
 })

@@ -35,9 +35,10 @@ plugins {
 dependencies {
     implementation(kotlin("stdlib"))
 
-    listOf("runner-junit5-jvm", "assertions-core").forEach {
+    listOf("runner-junit5-jvm", "assertions-core", "property").forEach {
         testImplementation("io.kotest:kotest-$it:5.9.1") // NO! "6.0.4"
     }
+
     testImplementation("io.mockk:mockk:1.14.6")
 }
 

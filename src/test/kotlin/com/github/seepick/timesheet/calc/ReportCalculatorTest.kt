@@ -1,14 +1,20 @@
-package com.github.seepick.timesheet
+package com.github.seepick.timesheet.calc
 
-import com.github.seepick.timesheet.builder.TimeSheetDsl
-import com.github.seepick.timesheet.builder.TimeSheetInitDsl
+import com.github.seepick.timesheet.date.Clock
+import com.github.seepick.timesheet.date.WorkDay.wednesday
+import com.github.seepick.timesheet.date.june
+import com.github.seepick.timesheet.date.tuesday
+import com.github.seepick.timesheet.dsl.TimeSheetDsl
+import com.github.seepick.timesheet.test_infra.parseDate
+import com.github.seepick.timesheet.test_infra.someDayOff
+import com.github.seepick.timesheet.test_infra.timesheetAny
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Month
 
-class TimeCalculatorTest : StringSpec() {
+class ReportCalculatorTest : StringSpec() {
 
     private val anyDay = 1
     private val minutesInHour = 60L
@@ -62,11 +68,15 @@ class TimeCalculatorTest : StringSpec() {
             report.totalMinutesToWork shouldBe workMinutesPerDay
         }
 
-        "filter free day" {
-            val report = calculate("2.6.21", { daysOff += WorkDay.Wednesday }) {
+        "Given wednesday off and work on tuesday When report until wednesday Then filter out free day" {
+            val report = calculate("2.6.21") { // next day is wednesday, which is off
                 year(2021) {
-                    month(Month.JUNE) {
-                        day(1) {
+                    june {
+                        tuesday(1) {
+                            contract {
+                                hoursPerWeek = 4
+                                dayOff = wednesday
+                            }
                             "10-18" - "any"
                         }
                     }
@@ -94,9 +104,9 @@ class TimeCalculatorTest : StringSpec() {
         }
     }
 
-    private fun calculate(today: String, initCode: TimeSheetInitDsl.() -> Unit = {}, sheet: TimeSheetDsl.() -> Unit) =
-        TimeCalculator(clockReturning(today))
-            .calculate(timesheetAny(init = initCode, entryCode = sheet))
+    private fun calculate(today: String, sheet: TimeSheetDsl.() -> Unit) =
+        ReportCalculator(clockReturning(today))
+            .calculate(timesheetAny(entryCode = sheet))
 
     private fun clockReturning(date: String): Clock {
         val clock = mockk<Clock>()

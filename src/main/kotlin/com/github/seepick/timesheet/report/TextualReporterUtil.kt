@@ -10,7 +10,7 @@ object TextualReporterUtil {
     fun generateHoursBalanceString(data: TimeReportData, colorize: String.() -> String): String {
         val pluralS = if(data.balanceInHours == 1.0) "" else "s"
         return when (data.balanceState) {
-            BalanceState.ToLittle -> {
+            BalanceState.TooLittle -> {
                 val absHoursBalanceFormatted = hoursFormatter.format(abs(data.balanceInHours))
                 "In ${"MINUS".colorize()} of [$absHoursBalanceFormatted] hour$pluralS ⚠️"
             }
