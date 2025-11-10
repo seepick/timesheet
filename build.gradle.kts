@@ -1,12 +1,35 @@
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import java.util.*
+
+//import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 repositories {
-    mavenCentral()
+//    val gradleProp = File(System.getProperty("user.home"), "/.gradle/gradle.properties")
+//    val azureToken = if (gradleProp.exists()) {
+//        Properties().apply {
+//            load(gradleProp.reader())
+//        }["uwv.azure_token"]?.toString()
+//    } else null
+//    if (azureToken != null) {
+    println("Using UWV repo.")
+    maven {
+        name = "UWV artifacts"
+        credentials {
+            username = "UWV"
+            password = "" // azureToken
+        }
+        url = uri("https://azuredevops.ba.uwv.nl/UWV/_packaging/UWV/maven/v1")
+        authentication.create<BasicAuthentication>("basic")
+    }
+//    } else {
+//        println("Using default repos.")
+//        mavenCentral()
+//        mavenLocal()
+//    }
 }
 
 plugins {
     kotlin("jvm") version "2.1.0" // NO! "2.2.20"
-    id("com.github.ben-manes.versions") version "0.53.0"
+//    id("com.github.ben-manes.versions") version "0.53.0"
 }
 
 dependencies {
@@ -23,12 +46,12 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<DependencyUpdatesTask> {
-    val rejectPatterns =
-        listOf(".*-ea.*", ".*RC.*", ".*rc.*", ".*M1", ".*check", ".*dev.*", ".*[Bb]eta.*", ".*[Aa]lpha.*").map { Regex(it) }
-    rejectVersionIf {
-        rejectPatterns.any {
-            it.matches(candidate.version)
-        }
-    }
-}
+//tasks.withType<DependencyUpdatesTask> {
+//    val rejectPatterns =
+//        listOf(".*-ea.*", ".*RC.*", ".*rc.*", ".*M1", ".*check", ".*dev.*", ".*[Bb]eta.*", ".*[Aa]lpha.*").map { Regex(it) }
+//    rejectVersionIf {
+//        rejectPatterns.any {
+//            it.matches(candidate.version)
+//        }
+//    }
+//}
