@@ -28,7 +28,9 @@ data class TimeRange(
     fun toParseableString() = parseableString
 
     fun overlaps(other: TimeRange): Boolean {
-        // MINOR can be improved
+        // TODO MINOR can be improved
+        // intellij is schizophrenic: says no (warning, use equals not ==) and yes (refactor to == if using equals)
+        @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
         return when {
             other.start == start && other.end == end -> true
             other.start.isAfter(start) && other.start.isBefore(end) -> true
@@ -44,7 +46,8 @@ sealed interface TimeRangeSpec {
 
     companion object {
 
-        private val regex = """^((\d{1,2})(:(\d{2}))?)?\-((\d{1,2})(:(\d{2}))?)?${'$'}""".toRegex()
+        // TODO test thoroughly
+        private val regex = """^((\d{1,2})(:(\d{2}))?)?-((\d{1,2})(:(\d{2}))?)?${'$'}""".toRegex()
 
         fun parse(input: String): TimeRangeSpec {
             if (!regex.matches(input)) {
