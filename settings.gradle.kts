@@ -12,7 +12,7 @@ pluginManagement {
             name = "UWV artifacts"
             credentials {
                 username = "UWV"
-                password = "" // azureToken
+                password = System.getProperty("azureToken")
             }
             url = uri("https://azuredevops.ba.uwv.nl/UWV/_packaging/UWV/maven/v1")
             authentication.create<BasicAuthentication>("basic")

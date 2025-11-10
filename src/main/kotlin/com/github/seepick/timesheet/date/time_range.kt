@@ -18,7 +18,7 @@ data class TimeRange(
     val end: LocalTime,
 ) {
     init {
-        require(start.isBefore(end))
+        require(start.isBefore(end)) { "start [$start] must be before end [$end]" }
     }
 
     val duration: Minutes = ChronoUnit.MINUTES.between(start, end)
