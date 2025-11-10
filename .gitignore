@@ -3,4 +3,5 @@
 /.idea/
 /src/main/kotlin/com/github/seepick/timesheet/MyTimeSheetApp.kt
 
+.kotlin/
 .DS_Store
