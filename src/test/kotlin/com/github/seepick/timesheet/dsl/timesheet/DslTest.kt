@@ -1,4 +1,4 @@
-package com.github.seepick.timesheet.builder
+package com.github.seepick.timesheet.dsl.timesheet
 
 import com.github.seepick.timesheet.contract.WorkContract
 import com.github.seepick.timesheet.date.DateRange
@@ -11,19 +11,12 @@ import com.github.seepick.timesheet.date.saturday
 import com.github.seepick.timesheet.date.sunday
 import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.date.until
+import com.github.seepick.timesheet.off.any
 import com.github.seepick.timesheet.tags.Tag
+import com.github.seepick.timesheet.tags.any
+import com.github.seepick.timesheet.tags.tag1
+import com.github.seepick.timesheet.tags.tag2
 import com.github.seepick.timesheet.test_infra.TestConstants
-import com.github.seepick.timesheet.test_infra.any
-import com.github.seepick.timesheet.test_infra.anyWorkingDay
-import com.github.seepick.timesheet.test_infra.dayOff
-import com.github.seepick.timesheet.test_infra.failingTimesheet
-import com.github.seepick.timesheet.test_infra.shouldHaveSingleEntryWithDate
-import com.github.seepick.timesheet.test_infra.someDayOff
-import com.github.seepick.timesheet.test_infra.someWorkEntry
-import com.github.seepick.timesheet.test_infra.someWorkingDay
-import com.github.seepick.timesheet.test_infra.tag1
-import com.github.seepick.timesheet.test_infra.tag2
-import com.github.seepick.timesheet.test_infra.timesheetAny
 import com.github.seepick.timesheet.timesheet.DayOffEntry
 import com.github.seepick.timesheet.timesheet.EntryDateRange
 import com.github.seepick.timesheet.timesheet.OffReason
@@ -45,7 +38,7 @@ import java.time.Month.JULY
 import java.time.Month.NOVEMBER
 import java.time.Month.SEPTEMBER
 
-class BuilderTest : DescribeSpec({
+class DslTest : DescribeSpec({
 
     val someDate = TestConstants.someDate
     val date1 = TestConstants.date1
@@ -339,25 +332,4 @@ class BuilderTest : DescribeSpec({
             )
         }
     }
-    /*
-    year(2000) {
-        month(september) {
-            day(monday, 1st) {
-                contract {
-                    hoursPerWeek = 32
-                    daysOff = friday
-                }
-                // TODO IDEA support different time definitions
-                13 to 15.30 - "worked on slides" - orga
-            }
-            day(mon, 2st) {
-                contract {
-                    hoursPerWeek = 38
-                    daysOff = none
-                }
-                14-15 - "foo" - meet
-            }
-        }
-    }
-     */
 })

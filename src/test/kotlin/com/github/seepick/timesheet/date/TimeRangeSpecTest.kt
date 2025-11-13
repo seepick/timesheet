@@ -1,10 +1,5 @@
-package com.github.seepick.timesheet.builder
+package com.github.seepick.timesheet.date
 
-import com.github.seepick.timesheet.date.ClosedRangeSpec
-import com.github.seepick.timesheet.date.OpenEndRangeSpec
-import com.github.seepick.timesheet.date.OpenStartRangeSpec
-import com.github.seepick.timesheet.date.TimeParseException
-import com.github.seepick.timesheet.date.TimeRangeSpec
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec

@@ -1,3 +1,5 @@
+@file:JvmName("BuilderTransformer") // for test recognition
+
 package com.github.seepick.timesheet.dsl
 
 import com.github.seepick.timesheet.date.ClosedRangeSpec

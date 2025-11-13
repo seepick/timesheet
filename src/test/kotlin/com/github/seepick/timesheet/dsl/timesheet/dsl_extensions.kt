@@ -1,14 +1,37 @@
-package com.github.seepick.timesheet.test_infra
+package com.github.seepick.timesheet.dsl.timesheet
 
+import com.github.seepick.timesheet.dsl.BuilderException
 import com.github.seepick.timesheet.dsl.MonthDsl
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
 import com.github.seepick.timesheet.dsl.WorkDayDsl
+import com.github.seepick.timesheet.dsl.timesheet
+import com.github.seepick.timesheet.off.OffReasons
+import com.github.seepick.timesheet.off.any
+import com.github.seepick.timesheet.tags.Tags
+import com.github.seepick.timesheet.tags.any
+import com.github.seepick.timesheet.test_infra.TestConstants
 import com.github.seepick.timesheet.timesheet.OffReason
+import com.github.seepick.timesheet.timesheet.TimeSheet
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import java.time.LocalDate
 import java.time.Month
 
 private val anyYear = 2000
 private val anyMonth = Month.JANUARY
+
+fun timesheetAny(entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
+    timesheet(Tags.any, OffReasons.any, entryCode)
+
+fun failingTimesheet(dsl: TimeSheetDsl.() -> Unit): BuilderException =
+    shouldThrow {
+        timesheetAny(entryCode = dsl)
+    }
+
+infix fun TimeSheet.shouldHaveSingleEntryWithDate(expected: LocalDate) {
+    entries.size shouldBe 1
+    entries.first().day shouldBe expected
+}
 
 fun TimeSheetDsl.anyYearMonth(code: MonthDsl.() -> Unit) {
     year(anyYear) {

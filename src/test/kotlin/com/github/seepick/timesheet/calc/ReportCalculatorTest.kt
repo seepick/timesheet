@@ -5,8 +5,8 @@ import com.github.seepick.timesheet.date.WorkDay.wednesday
 import com.github.seepick.timesheet.date.june
 import com.github.seepick.timesheet.date.tuesday
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
+import com.github.seepick.timesheet.dsl.timesheet.someDayOff
 import com.github.seepick.timesheet.test_infra.parseDate
-import com.github.seepick.timesheet.test_infra.someDayOff
 import com.github.seepick.timesheet.test_infra.timesheetAny
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

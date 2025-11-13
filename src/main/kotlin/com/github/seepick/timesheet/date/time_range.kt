@@ -24,7 +24,6 @@ data class TimeRange(
     val duration: Minutes = ChronoUnit.MINUTES.between(start, end)
     private val parseableString = "${start.toParseableString()}-${end.toParseableString()}"
 
-
     fun toParseableString() = parseableString
 
     fun overlaps(other: TimeRange): Boolean {
@@ -95,6 +94,7 @@ sealed interface TimeRangeSpec {
 
 class TimeParseException(message: String, cause: Exception? = null) : Exception(message, cause)
 
+/** Both defined: "8:00-9:00" */
 data class ClosedRangeSpec(
     override val start: LocalTime,
     override val end: LocalTime,
@@ -107,6 +107,7 @@ data class ClosedRangeSpec(
     override fun toParseableString() = "$start-$end"
 }
 
+/** Start only defined: "8:00-" */
 data class OpenEndRangeSpec(
     override val start: LocalTime
 ) : TimeRangeSpec, HasStartTime {
@@ -114,6 +115,7 @@ data class OpenEndRangeSpec(
     override fun toParseableString() = "$start-"
 }
 
+/** End only defined: "-8:00" */
 data class OpenStartRangeSpec(
     override val end: LocalTime
 ) : TimeRangeSpec, HasEndTime {
