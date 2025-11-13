@@ -5,6 +5,7 @@ import com.github.seepick.timesheet.contract.ContractDslImpl
 import com.github.seepick.timesheet.contract.DefinedWorkContract
 import com.github.seepick.timesheet.contract.WorkContract
 import com.github.seepick.timesheet.contract.transformContracts
+import com.github.seepick.timesheet.date.Clock
 import com.github.seepick.timesheet.date.Day
 import com.github.seepick.timesheet.date.TimeRangeSpec
 import com.github.seepick.timesheet.date.WorkDay
@@ -40,6 +41,7 @@ class Current {
 
 class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private val context: TimeSheetContext<TAGS, OFFS>,
+    private val clock: Clock,
     private val contractDslImpl: ContractDslImpl = ContractDslImpl(),
     private val current: Current = Current(),
     private val tagDslImpl: TagDslImpl<TAGS, OFFS> = TagDslImpl(context, current),
@@ -152,7 +154,10 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
 
         return TimeSheet(
             entries = timeEntries,
-            contracts = transformContracts(current.contracts, timeEntries),
+            contracts = transformContracts(
+                contracts = current.contracts,
+                sheetEndDate = clock.currentLocalDate(),
+            ),
         )
     }
 }

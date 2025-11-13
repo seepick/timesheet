@@ -1,11 +1,23 @@
 package com.github.seepick.timesheet.date
 
+import com.github.seepick.timesheet.test_infra.parseDate
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.localTime
 import io.kotest.property.arbitrary.next
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+
+class StaticClock(private val date: LocalDate) : Clock {
+    constructor(dateString: String) : this(dateString.parseDate())
+
+    private val time = LocalTime.of(0, 42)
+    private val fullDateTime = LocalDateTime.of(date, time)
+    override fun currentLocalDate() = date
+    override fun currentLocalDateTime(): LocalDateTime = fullDateTime
+}
 
 fun Arb.Companion.workDays() = arbitrary {
     val amount = int(min = 0, max = 3).next()

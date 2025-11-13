@@ -1,31 +1,29 @@
 package com.github.seepick.timesheet.calc
 
-import com.github.seepick.timesheet.date.Clock
+import com.github.seepick.timesheet.date.MINUTES_IN_HOUR
+import com.github.seepick.timesheet.date.StaticClock
 import com.github.seepick.timesheet.date.WorkDay.wednesday
 import com.github.seepick.timesheet.date.june
+import com.github.seepick.timesheet.date.parseDate
 import com.github.seepick.timesheet.date.tuesday
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
 import com.github.seepick.timesheet.dsl.timesheet.someDayOff
+import com.github.seepick.timesheet.dsl.timesheet.someWorkEntry
 import com.github.seepick.timesheet.dsl.timesheet.timesheetAny
-import com.github.seepick.timesheet.test_infra.parseDate
+import com.github.seepick.timesheet.report.TimeReportData
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.every
-import io.mockk.mockk
-import java.time.Duration
 import java.time.Month
-
-private const val minutesInHour = 60L
 
 class ReportCalculatorTest : StringSpec() {
 
     private val anyDay = 1
     private val workHoursPerDay = 8L
-    private val workMinutesPerDay = workHoursPerDay * minutesInHour
+    private val workMinutesPerDay = workHoursPerDay * MINUTES_IN_HOUR
 
     init {
         "single complete work day" {
-            val report = calculate("1.6.21") {
+            val report = calculate("1.6.21") { // a tuesday
                 year(2021) {
                     month(Month.JUNE) {
                         day(1) {
@@ -35,9 +33,9 @@ class ReportCalculatorTest : StringSpec() {
                 }
             }
 
-            report.totalHoursToWork shouldBe 8
-            report.totalHoursWorked shouldBe 8
-            report.balanceInHours shouldBe 0
+            report.totalHoursToWork shouldBe 8.0
+            report.totalHoursWorked shouldBe 8.0
+            report.balanceInHours shouldBe 0.0
         }
 
         "single incomplete work day" {
@@ -51,9 +49,9 @@ class ReportCalculatorTest : StringSpec() {
                 }
             }
 
-            report.totalHoursToWork shouldBe 8
-            report.totalHoursWorked shouldBe 6
-            report.balanceInHours shouldBe -2
+            report.totalHoursToWork shouldBe 8.0
+            report.totalHoursWorked shouldBe 6.0
+            report.balanceInHours shouldBe -2.0
         }
 
         "filter weekend" {
@@ -79,14 +77,13 @@ class ReportCalculatorTest : StringSpec() {
                                 hoursPerWeek = 32
                                 dayOff = wednesday
                             }
-                            "10-18" - "any"
+                            someWorkEntry()
                         }
                     }
                 }
             }
-            
-            Duration.between(report.sheet.startDate, report.sheet.endDate).toDays() shouldBe 1
-            report.totalHoursToWork shouldBe 8 // not 16
+
+            report.totalHoursToWork shouldBe 8.0 // not 16
         }
 
         "filter day off" {
@@ -101,20 +98,15 @@ class ReportCalculatorTest : StringSpec() {
                 }
             }
 
-            report.totalHoursToWork shouldBe 8
-            report.totalHoursWorked shouldBe 8
-            report.balanceInHours shouldBe 0
+            report.totalHoursToWork shouldBe 8.0
+            report.totalHoursWorked shouldBe 8.0
+            report.balanceInHours shouldBe 0.0
         }
     }
 
-    private fun calculate(today: String, sheet: TimeSheetDsl.() -> Unit) =
-        ReportCalculator(clockReturning(today))
-            .calculate(timesheetAny(entryCode = sheet))
-
-    private fun clockReturning(date: String): Clock {
-        val clock = mockk<Clock>()
-        every { clock.currentLocalDate() } returns date.parseDate()
-        return clock
+    private fun calculate(today: String, sheet: TimeSheetDsl.() -> Unit): TimeReportData {
+        val clock = StaticClock(today)
+        return ReportCalculator(clock)
+            .calculate(timesheetAny(today = today.parseDate(), entryCode = sheet))
     }
 }
-

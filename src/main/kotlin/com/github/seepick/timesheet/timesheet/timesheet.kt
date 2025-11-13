@@ -1,6 +1,7 @@
 package com.github.seepick.timesheet.timesheet
 
 import com.github.seepick.timesheet.contract.RangedWorkContract
+import com.github.seepick.timesheet.contract.WorkContract
 import com.github.seepick.timesheet.date.HasTimeRange
 import com.github.seepick.timesheet.date.Minutes
 import com.github.seepick.timesheet.date.TimeRange
@@ -10,14 +11,12 @@ data class TimeSheet(
     val entries: TimeEntries,
     val contracts: List<RangedWorkContract>,
 ) {
-    val hoursToWorkPerDay = 8 // FIXME !!! change to: hours to work per week; based on that, calculate back per day
+    fun contractFor(date: LocalDate): WorkContract =
+        contracts.find { it.isWithin(date) }?.contract ?: throw RuntimeException("No contract found for date [$date]")
+
     val startDate = entries.firstDate
     val endDate = entries.lastDate
-//    private val freeDaysJavaType = freeDays.map { it.allDays }
-
-//    fun freeDaysContains(day: DayOfWeek) = freeDaysJavaType.contains(day)
 }
-
 
 data class EntryDateRange(
     val day: LocalDate,

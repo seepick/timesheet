@@ -5,7 +5,6 @@ import com.github.seepick.timesheet.date.DateRange
 import com.github.seepick.timesheet.date.TimeRange
 import com.github.seepick.timesheet.date.WorkDay.friday
 import com.github.seepick.timesheet.date.WorkDay.monday
-import com.github.seepick.timesheet.date.february
 import com.github.seepick.timesheet.date.monday
 import com.github.seepick.timesheet.date.november
 import com.github.seepick.timesheet.date.saturday
@@ -21,6 +20,7 @@ import com.github.seepick.timesheet.tags.any
 import com.github.seepick.timesheet.tags.tag1
 import com.github.seepick.timesheet.tags.tag2
 import com.github.seepick.timesheet.test_infra.TestConstants
+import com.github.seepick.timesheet.test_infra.parseDate
 import com.github.seepick.timesheet.timesheet.EntryDateRange
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.WorkDayEntry
@@ -34,6 +34,9 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.localDate
+import io.kotest.property.arbitrary.next
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month.JULY
@@ -42,7 +45,9 @@ import java.time.Month.SEPTEMBER
 
 class DslTest : DescribeSpec({
 
-    val someDate = TestConstants.someDate
+    val anyDate = Arb.localDate().next()
+    val someDateString = "13.11.25" // thursday
+    val someDate = someDateString.parseDate()
     val date1 = TestConstants.date1
     val date2 = TestConstants.date2
     val someTimeRange = TestConstants.someTimeRange
@@ -62,7 +67,7 @@ class DslTest : DescribeSpec({
     // TODO split this up
     describe("foo") {
         it("start date properly calculated") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny("10.11.25") {
                 year(2025) {
                     november {
                         monday(10.th) {
@@ -77,7 +82,7 @@ class DslTest : DescribeSpec({
     }
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny(someDate) {
                 someWorkingDay(someDate) {
                     someWorkEntry()
                 }
@@ -86,8 +91,8 @@ class DslTest : DescribeSpec({
             sheet.startDate shouldBe someDate
         }
         it("two valid working days Then two entries returned") {
-            val sheet = timesheetAny {
-                someWorkingDay {
+            val sheet = timesheetAny(someDate) {
+                someWorkingDay(someDate) {
                     someWorkEntry(timeRange = timeRange1.toParseableString())
                     someWorkEntry(timeRange = timeRange2.toParseableString())
                 }
@@ -98,7 +103,7 @@ class DslTest : DescribeSpec({
             val timeStart = LocalTime.of(9, 30)
             val timeEnd = LocalTime.of(10, 0)
 
-            val sheet = timesheetAny {
+            val sheet = timesheetAny(someDate) {
                 someWorkingDay(someDate) {
                     "9:30-10" about description tag (someTag)
                 }
@@ -115,8 +120,8 @@ class DslTest : DescribeSpec({
             )
         }
         it("two tags Then parsed tags returned") {
-            val sheet = timesheetAny {
-                someWorkingDay {
+            val sheet = timesheetAny(someDate) {
+                someWorkingDay(someDate) {
                     anyTimeRangeString - anyDescription - listOf(tag1, tag2)
                     // anyTimeRangeString.about(anyDescription).tags(tag1, tag2)
                 }
@@ -126,39 +131,41 @@ class DslTest : DescribeSpec({
             sheet.entries.workEntries[0].tags shouldContainExactly setOf(tag1, tag2)
         }
         it("day off") {
-            val sheet = timesheetAny {
-                anyWorkingDay()
-                dayOff(date2, someOffReason)
+            val sheet = timesheetAny(someDate) {
+                someWorkingDay(someDate.minusDays(1))
+                dayOff(someDate, someOffReason)
             }
 
             sheet.entries shouldContain DayOffEntry(
-                day = date2,
+                day = someDate,
                 reason = someOffReason,
             )
         }
     }
+    // TODO test exception messages
     describe("When ... invalid Then fail") {
         it("no days") {
-            failingTimesheet {}
+            failingTimesheet(anyDate) {}
         }
         it("starts with day-off day") {
-            failingTimesheet {
-                someDayOff()
+            failingTimesheet(someDate) {
+                someDayOff(someDate)
             }
         }
         it("Given some work day When day-off without reason entry") {
-            failingTimesheet {
-                anyWorkingDay()
-                year(anyYear) {
-                    month(anyMonth) {
-                        dayOff(1) // missing: becauseOf reason
+            val date = "13.11.25".parseDate() // thursday
+            failingTimesheet(date) {
+                year(date.year) {
+                    month(date.month) {
+                        someWorkingDay(12)
+                        dayOff(13) // missing: becauseOf reason
                     }
                 }
             }
         }
         it("two work days with same date") {
             val conflictingDate = TestConstants.someDate
-            failingTimesheet {
+            failingTimesheet(conflictingDate) {
                 someWorkingDay(date = conflictingDate)
                 someWorkingDay(date = conflictingDate)
 
@@ -168,7 +175,7 @@ class DslTest : DescribeSpec({
         // TODO two day offs with same date
         // TODO 1 work day 1 day off; same date
         it("work entry without about") {
-            failingTimesheet {
+            failingTimesheet(someDate) {
                 someWorkingDay(someDate) {
                     anyTimeRangeString about " "
                 }
@@ -176,7 +183,7 @@ class DslTest : DescribeSpec({
         }
         // TODO test 2 days off at same date
         it("two work entries with same time") {
-            failingTimesheet {
+            failingTimesheet(someDate) {
                 someWorkingDay(someDate) {
                     someWorkEntry(timeRange = someTimeRangeString)
                     someWorkEntry(timeRange = someTimeRangeString)
@@ -187,23 +194,24 @@ class DslTest : DescribeSpec({
 
     describe("When ... year-month-day") {
         it("When add work-day Then set date correctly") {
-            timesheetAny {
-                year(2003) {
-                    february {
-                        day(1) {
+            timesheetAny(someDate) {
+                year(someDate.year) {
+                    month(someDate.month) {
+                        day(someDate.dayOfMonth) {
                             someWorkEntry()
                         }
                     }
                 }
-            } shouldHaveSingleEntryWithDate LocalDate.of(2003, 2, 1)
+            } shouldHaveSingleEntryWithDate someDate
         }
         it("Given work-day When add day-off Then set date correctly") {
-            val day1 = 1
-            val day2 = 2
+            val day1 = 12
+            val day2 = 13
+            val date = "13.11.25".parseDate() // thursday
 
-            val sheet = timesheetAny {
-                year(anyYear) {
-                    month(anyMonth) {
+            val sheet = timesheetAny(date) {
+                year(date.year) {
+                    month(date.month) {
                         day(day1) {
                             someWorkEntry()
                         }
@@ -219,8 +227,8 @@ class DslTest : DescribeSpec({
 
     describe("When ... partial time range") {
         it("open end success") {
-            val sheet = timesheetAny {
-                someWorkingDay {
+            val sheet = timesheetAny(someDate) {
+                someWorkingDay(someDate) {
                     "0-" - "open end entry"
                     "1-2" - "last entry"
                 }
@@ -230,8 +238,8 @@ class DslTest : DescribeSpec({
             sheet.entries.workEntries.first().dateRange.timeRange shouldBe (0 until 1)
         }
         it("open begin success") {
-            val sheet = timesheetAny {
-                someWorkingDay {
+            val sheet = timesheetAny(someDate) {
+                someWorkingDay(someDate) {
                     "0-1" - "first entry"
                     "-2" - "open begin entry"
                 }
@@ -241,28 +249,28 @@ class DslTest : DescribeSpec({
             sheet.entries.workEntries.last().dateRange.timeRange shouldBe (1 until 2)
         }
         it("single open end fail") {
-            val exception = failingTimesheet {
-                someWorkingDay(LocalDate.of(2003, 2, 1)) {
+            val exception = failingTimesheet(someDate) {
+                someWorkingDay(someDate) {
                     "0-" - "open end entry"
                 }
             }
             exception.message shouldContain "00:00-"
-            exception.message shouldContain "1.2.03"
+            exception.message shouldContain someDateString
         }
         it("single end end fail") {
-            val exception = failingTimesheet {
-                someWorkingDay(LocalDate.of(2003, 2, 1)) {
+            val exception = failingTimesheet(someDate) {
+                someWorkingDay(someDate) {
                     "-1" - "open begin entry"
                 }
             }
             exception.message shouldContain "1:00"
-            exception.message shouldContain "1.2.03"
+            exception.message shouldContain someDateString
         }
         // TODO test overlaps
     }
     describe("days off") {
         it("range") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny("3.7.00") {
                 year(2000) {
                     month(JULY) {
                         someWorkingDay(1)
@@ -281,7 +289,7 @@ class DslTest : DescribeSpec({
     describe("day label") {
         it("incorrect fails") {
             shouldThrow<IllegalArgumentException> {
-                timesheetAny {
+                timesheetAny("10.11.25") {
                     year(2025) {
                         november {
                             saturday(9) { // NO! it's sunday
@@ -293,7 +301,7 @@ class DslTest : DescribeSpec({
             }
         }
         it("correct") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny("10.11.25") {
                 year(2025) {
                     month(NOVEMBER) {
                         sunday(9) {
@@ -307,7 +315,7 @@ class DslTest : DescribeSpec({
     }
     describe("contract") {
         it("skipping will get default") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny(someDate) {
                 someWorkingDay(someDate) {
                     someWorkEntry()
                 }
@@ -315,7 +323,7 @@ class DslTest : DescribeSpec({
             sheet.contracts.shouldBeSingleton().first().contract shouldBe WorkContract.default
         }
         it("custom contract") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny(someDate) {
                 someWorkingDay(someDate) {
                     contract {
                         hoursPerWeek = 10
@@ -331,7 +339,7 @@ class DslTest : DescribeSpec({
             )
         }
         it("custom contract test dates") {
-            val sheet = timesheetAny {
+            val sheet = timesheetAny("1.9.00") {
                 year(2000) {
                     month(SEPTEMBER) {
                         day(1) {

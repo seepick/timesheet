@@ -2,6 +2,7 @@ package com.github.seepick.timesheet.report
 
 import com.github.seepick.timesheet.calc.ReportCalculator
 import com.github.seepick.timesheet.date.Hours
+import com.github.seepick.timesheet.date.MINUTES_IN_HOUR
 import com.github.seepick.timesheet.date.Minutes
 import com.github.seepick.timesheet.timesheet.TimeSheet
 
@@ -33,12 +34,9 @@ data class TimeReportData(
     val totalMinutesToWork: Minutes,
     val totalMinutesWorked: Minutes,
 ) {
-    companion object {
-        private const val minutesInHour = 60L
-    }
 
-    val totalHoursToWork = totalMinutesToWork.toDouble() / minutesInHour
-    val totalHoursWorked = totalMinutesWorked.toDouble() / minutesInHour
+    val totalHoursToWork = totalMinutesToWork.toDouble() / MINUTES_IN_HOUR
+    val totalHoursWorked = totalMinutesWorked.toDouble() / MINUTES_IN_HOUR
     val balanceInMinutes: Minutes = totalMinutesWorked - totalMinutesToWork
     val balanceInHours: Hours = balanceInMinutes.toDouble() / 60.0
     val balanceState = when {

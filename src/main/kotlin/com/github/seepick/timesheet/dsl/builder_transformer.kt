@@ -38,11 +38,11 @@ fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): Li
             )
         )
 
-        is BuilderDaysOffEntry -> this.dates.map {
-            DayOffEntry(
-                day = it,
-                reason = reason ?: throw BuilderException("no day off reason was given for: $this")
-            )
+        is BuilderDaysOffEntry -> {
+            val nonNullReason = reason ?: throw BuilderException("no day off reason was given for: $this")
+            this.dates.map {
+                DayOffEntry(day = it, reason = nonNullReason)
+            }
         }
 
         else -> throw UnsupportedOperationException("Unrecognized BuilderEntry type: ${this.javaClass.name}")

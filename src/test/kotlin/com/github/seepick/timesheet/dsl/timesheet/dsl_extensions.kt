@@ -1,5 +1,6 @@
 package com.github.seepick.timesheet.dsl.timesheet
 
+import com.github.seepick.timesheet.date.StaticClock
 import com.github.seepick.timesheet.dsl.BuilderException
 import com.github.seepick.timesheet.dsl.MonthDsl
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
@@ -20,12 +21,15 @@ import java.time.Month
 private val anyYear = 2000
 private val anyMonth = Month.JANUARY
 
-fun timesheetAny(entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
-    timesheet(Tags.any, OffReasons.any, entryCode)
+fun timesheetAny(today: String, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
+    timesheet(Tags.any, OffReasons.any, StaticClock(today), entryCode)
 
-fun failingTimesheet(dsl: TimeSheetDsl.() -> Unit): BuilderException =
+fun timesheetAny(today: LocalDate, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
+    timesheet(Tags.any, OffReasons.any, StaticClock(today), entryCode)
+
+fun failingTimesheet(today: LocalDate, dsl: TimeSheetDsl.() -> Unit): BuilderException =
     shouldThrow {
-        timesheetAny(entryCode = dsl)
+        timesheetAny(today, entryCode = dsl)
     }
 
 infix fun TimeSheet.shouldHaveSingleEntryWithDate(expected: LocalDate) {
