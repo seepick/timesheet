@@ -1,8 +1,7 @@
 package com.github.seepick.timesheet.contract
 
 import com.github.seepick.timesheet.date.DateRange
-import com.github.seepick.timesheet.test_infra.timeRange
-import com.github.seepick.timesheet.test_infra.workContract
+import com.github.seepick.timesheet.date.timeRange
 import com.github.seepick.timesheet.timesheet.EntryDateRange
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.WorkDayEntry

@@ -1,6 +1,6 @@
 package com.github.seepick.timesheet.contract
 
-import com.github.seepick.timesheet.test_infra.workDays
+import com.github.seepick.timesheet.date.workDays
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.int

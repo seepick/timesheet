@@ -6,20 +6,22 @@ import com.github.seepick.timesheet.date.TimeRange
 import com.github.seepick.timesheet.date.WorkDay.friday
 import com.github.seepick.timesheet.date.WorkDay.monday
 import com.github.seepick.timesheet.date.february
+import com.github.seepick.timesheet.date.monday
 import com.github.seepick.timesheet.date.november
 import com.github.seepick.timesheet.date.saturday
 import com.github.seepick.timesheet.date.sunday
+import com.github.seepick.timesheet.date.th
 import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.date.until
+import com.github.seepick.timesheet.off.DayOffEntry
+import com.github.seepick.timesheet.off.OffReason
 import com.github.seepick.timesheet.off.any
 import com.github.seepick.timesheet.tags.Tag
 import com.github.seepick.timesheet.tags.any
 import com.github.seepick.timesheet.tags.tag1
 import com.github.seepick.timesheet.tags.tag2
 import com.github.seepick.timesheet.test_infra.TestConstants
-import com.github.seepick.timesheet.timesheet.DayOffEntry
 import com.github.seepick.timesheet.timesheet.EntryDateRange
-import com.github.seepick.timesheet.timesheet.OffReason
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.WorkDayEntry
 import com.github.seepick.timesheet.timesheet.byTimeEntries
@@ -57,6 +59,22 @@ class DslTest : DescribeSpec({
     val tag2 = Tag.tag2
     val someOffReason = OffReason.any
 
+    // TODO split this up
+    describe("foo") {
+        it("start date properly calculated") {
+            val sheet = timesheetAny {
+                year(2025) {
+                    november {
+                        monday(10.th) {
+                            someWorkEntry()
+                        }
+                    }
+                }
+            }
+
+            sheet.startDate shouldBe LocalDate.parse("2025-11-10")
+        }
+    }
     describe("When sunshine case") {
         it("valid working day and entry Then sheet's start date is of work entry") {
             val sheet = timesheetAny {
