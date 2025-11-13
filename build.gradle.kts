@@ -1,5 +1,3 @@
-import java.util.*
-
 //import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 repositories {
@@ -9,22 +7,23 @@ repositories {
 //            load(gradleProp.reader())
 //        }["uwv.azure_token"]?.toString()
 //    } else null
-//    if (azureToken != null) {
-    println("Using UWV repo.")
-    maven {
-        name = "UWV artifacts"
-        credentials {
-            username = "UWV"
-            password = System.getProperty("azureToken")
+    val azureToken = System.getProperty("azureToken")
+    if (azureToken != null) {
+        println("Using UWV repo.")
+        maven {
+            name = "UWV artifacts"
+            credentials {
+                username = "UWV"
+                password = azureToken
+            }
+            url = uri("https://azuredevops.ba.uwv.nl/UWV/_packaging/UWV/maven/v1")
+            authentication.create<BasicAuthentication>("basic")
         }
-        url = uri("https://azuredevops.ba.uwv.nl/UWV/_packaging/UWV/maven/v1")
-        authentication.create<BasicAuthentication>("basic")
+    } else {
+        println("Using default repos.")
+        mavenCentral()
+        mavenLocal()
     }
-//    } else {
-//        println("Using default repos.")
-//        mavenCentral()
-//        mavenLocal()
-//    }
 }
 
 plugins {

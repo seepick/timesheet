@@ -6,23 +6,24 @@ pluginManagement {
 //                load(gradleProp.reader())
 //            }["uwv.azure_token"]?.toString()
 //        } else null
-//        if (azureToken != null) {
-        println("Using UWV plugin repo.")
-        maven {
-            name = "UWV artifacts"
-            credentials {
-                username = "UWV"
-                password = System.getProperty("azureToken")
+        val azureToken = System.getProperty("azureToken")
+        if (azureToken != null) {
+            println("Using UWV plugin repo.")
+            maven {
+                name = "UWV artifacts"
+                credentials {
+                    username = "UWV"
+                    password = azureToken
+                }
+                url = uri("https://azuredevops.ba.uwv.nl/UWV/_packaging/UWV/maven/v1")
+                authentication.create<BasicAuthentication>("basic")
             }
-            url = uri("https://azuredevops.ba.uwv.nl/UWV/_packaging/UWV/maven/v1")
-            authentication.create<BasicAuthentication>("basic")
+        } else {
+            println("Using default plugin repo.")
+            google()
+            gradlePluginPortal()
+            mavenCentral()
         }
-//        } else {
-//            println("Using default plugin repo.")
-//            google()
-//            gradlePluginPortal()
-//            mavenCentral()
-//        }
     }
 }
 
