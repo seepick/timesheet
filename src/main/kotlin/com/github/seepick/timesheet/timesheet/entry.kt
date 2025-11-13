@@ -6,6 +6,7 @@ import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.dsl.BuilderEntry
 import com.github.seepick.timesheet.dsl.BuilderException
 import com.github.seepick.timesheet.dsl.toRealEntry
+import com.github.seepick.timesheet.off.DayOffEntry
 import com.github.seepick.timesheet.tags.Tag
 import java.time.LocalDate
 
@@ -13,7 +14,7 @@ interface TimeEntryFields {
     val day: LocalDate
 }
 
-sealed interface TimeEntry : TimeEntryFields
+interface TimeEntry : TimeEntryFields
 
 data class WorkDayEntry(
     val dateRange: EntryDateRange,

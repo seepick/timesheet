@@ -3,6 +3,7 @@ package com.github.seepick.timesheet.dsl
 import com.github.seepick.timesheet.date.timeRangeSpec
 import com.github.seepick.timesheet.off.BuilderDayOffEntry
 import com.github.seepick.timesheet.off.BuilderDaysOffEntry
+import com.github.seepick.timesheet.off.offReason
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.enum
@@ -10,6 +11,7 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.intRange
 import io.kotest.property.arbitrary.localDate
 import io.kotest.property.arbitrary.next
+import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.string
 import java.time.Month
 
@@ -30,6 +32,7 @@ fun Arb.Companion.builderWorkDayEntry() = arbitrary {
 fun Arb.Companion.builderDayOffEntry() = arbitrary {
     BuilderDayOffEntry(
         day = localDate().next(),
+        reason = offReason().orNull().next(),
     )
 }
 

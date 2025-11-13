@@ -12,12 +12,12 @@ import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.off.BuilderDayOffEntry
 import com.github.seepick.timesheet.off.BuilderDaysOffEntry
 import com.github.seepick.timesheet.off.DayOffDsl
+import com.github.seepick.timesheet.off.OffReason
 import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.off.ReasonableOffEntry
 import com.github.seepick.timesheet.tags.TagDsl
 import com.github.seepick.timesheet.tags.TagDslImpl
 import com.github.seepick.timesheet.tags.Tags
-import com.github.seepick.timesheet.timesheet.OffReason
 import com.github.seepick.timesheet.timesheet.TimeEntries
 import com.github.seepick.timesheet.timesheet.TimeSheet
 import java.time.LocalDate

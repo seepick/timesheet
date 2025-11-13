@@ -5,12 +5,12 @@ import com.github.seepick.timesheet.dsl.MonthDsl
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
 import com.github.seepick.timesheet.dsl.WorkDayDsl
 import com.github.seepick.timesheet.dsl.timesheet
+import com.github.seepick.timesheet.off.OffReason
 import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.off.any
 import com.github.seepick.timesheet.tags.Tags
 import com.github.seepick.timesheet.tags.any
 import com.github.seepick.timesheet.test_infra.TestConstants
-import com.github.seepick.timesheet.timesheet.OffReason
 import com.github.seepick.timesheet.timesheet.TimeSheet
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe

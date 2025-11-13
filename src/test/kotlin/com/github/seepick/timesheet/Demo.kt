@@ -13,11 +13,11 @@ import com.github.seepick.timesheet.date.rd
 import com.github.seepick.timesheet.date.th
 import com.github.seepick.timesheet.dsl.WorkDayDsl
 import com.github.seepick.timesheet.dsl.timesheet
+import com.github.seepick.timesheet.off.NamedOffReason
 import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.report.calculate
 import com.github.seepick.timesheet.tags.NamedTag
 import com.github.seepick.timesheet.tags.Tags
-import com.github.seepick.timesheet.timesheet.NamedOffReason
 
 // 1. define context
 // ====================================================================================================================

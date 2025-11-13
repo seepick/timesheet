@@ -6,8 +6,8 @@ import com.github.seepick.timesheet.contract.ContractDsl
 import com.github.seepick.timesheet.date.Day
 import com.github.seepick.timesheet.date.WorkDay
 import com.github.seepick.timesheet.off.DayOffDsl
+import com.github.seepick.timesheet.off.OffReason
 import com.github.seepick.timesheet.tags.TagDsl
-import com.github.seepick.timesheet.timesheet.OffReason
 import java.time.Month
 
 @DslMarker

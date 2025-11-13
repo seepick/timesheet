@@ -1,5 +1,6 @@
-package com.github.seepick.timesheet.timesheet
+package com.github.seepick.timesheet.off
 
+import com.github.seepick.timesheet.timesheet.TimeEntry
 import java.time.LocalDate
 
 interface OffReason {

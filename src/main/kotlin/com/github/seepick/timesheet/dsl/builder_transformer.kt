@@ -12,7 +12,7 @@ import com.github.seepick.timesheet.date.TimeRangeSpec
 import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.off.BuilderDayOffEntry
 import com.github.seepick.timesheet.off.BuilderDaysOffEntry
-import com.github.seepick.timesheet.timesheet.DayOffEntry
+import com.github.seepick.timesheet.off.DayOffEntry
 import com.github.seepick.timesheet.timesheet.EntryDateRange
 import com.github.seepick.timesheet.timesheet.TimeEntry
 import com.github.seepick.timesheet.timesheet.WorkDayEntry
