@@ -22,6 +22,7 @@ interface TimeSheetDsl {
 
 interface YearDsl {
     fun month(month: Month, code: MonthDsl.() -> Unit)
+    fun month(month: Int, code: MonthDsl.() -> Unit)
 }
 
 @TimesheetAppDsl

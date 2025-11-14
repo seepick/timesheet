@@ -15,6 +15,7 @@ object TestConstants {
     val time3 = time2.plusHours(1)
     val time4 = time3.plusHours(1)
     val someTimeRange = TimeRange(time1, time2)
+    val someTimeRangeString = "10-11"
     val timeRange1 = TimeRange(time1, time2)
     val timeRange2 = TimeRange(time3, time4)
 }

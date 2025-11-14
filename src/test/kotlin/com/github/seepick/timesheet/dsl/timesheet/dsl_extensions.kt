@@ -1,7 +1,7 @@
 package com.github.seepick.timesheet.dsl.timesheet
 
 import com.github.seepick.timesheet.date.StaticClock
-import com.github.seepick.timesheet.dsl.BuilderException
+import com.github.seepick.timesheet.dsl.InvalidSheetException
 import com.github.seepick.timesheet.dsl.MonthDsl
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
 import com.github.seepick.timesheet.dsl.WorkDayDsl
@@ -9,6 +9,7 @@ import com.github.seepick.timesheet.dsl.timesheet
 import com.github.seepick.timesheet.off.OffReason
 import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.off.any
+import com.github.seepick.timesheet.tags.Tag
 import com.github.seepick.timesheet.tags.Tags
 import com.github.seepick.timesheet.tags.any
 import com.github.seepick.timesheet.test_infra.TestConstants
@@ -27,7 +28,7 @@ fun timesheetAny(today: String, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
 fun timesheetAny(today: LocalDate, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
     timesheet(Tags.any, OffReasons.any, StaticClock(today), entryCode)
 
-fun failingTimesheet(today: LocalDate, dsl: TimeSheetDsl.() -> Unit): BuilderException =
+fun failingTimesheet(today: LocalDate, dsl: TimeSheetDsl.() -> Unit): InvalidSheetException =
     shouldThrow {
         timesheetAny(today, entryCode = dsl)
     }
@@ -82,12 +83,13 @@ fun MonthDsl.someWorkingDay(day: Int) {
     }
 }
 
-
-fun WorkDayDsl.someWorkEntry(timeRange: String = someTimeRange, about: String = "some about") {
-    timeRange about about
+fun WorkDayDsl.someWorkEntry(
+    timeRange: String = TestConstants.someTimeRangeString,
+    about: String = "some about",
+    tags: List<Tag> = emptyList(),
+) {
+    timeRange - about - tags
 }
-
-const val someTimeRange = "10-11"
 
 fun MonthDsl.someDayOff(day: Int) {
     dayOff(day) becauseOf OffReason.any

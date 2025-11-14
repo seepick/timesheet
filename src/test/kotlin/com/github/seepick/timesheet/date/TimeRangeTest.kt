@@ -12,15 +12,15 @@ class TimeRangeTest : DescribeSpec({
     val time4 = LocalTime.of(4, 0)
 
     describe("start before-equals end") {
-        it("success") {
+        it("start before end - success") {
             TimeRange(time1, time2)
         }
-        it("bigger fail") {
+        it("start after end - fail") {
             shouldThrow<IllegalArgumentException> {
                 TimeRange(time2, time1)
             }
         }
-        it("same fail") {
+        it("both same - fail") {
             shouldThrow<IllegalArgumentException> {
                 TimeRange(time1, time1)
             }

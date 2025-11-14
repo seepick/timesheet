@@ -34,12 +34,12 @@ fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): Li
         is BuilderDayOffEntry -> listOf(
             DayOffEntry(
                 day = day,
-                reason = reason ?: throw BuilderException("no day off reason was given for: $this")
+                reason = reason ?: throw InvalidSheetException("no day off reason was given for: $this")
             )
         )
 
         is BuilderDaysOffEntry -> {
-            val nonNullReason = reason ?: throw BuilderException("no day off reason was given for: $this")
+            val nonNullReason = reason ?: throw InvalidSheetException("no day off reason was given for: $this")
             this.dates.map {
                 DayOffEntry(day = it, reason = nonNullReason)
             }
@@ -71,14 +71,14 @@ private fun transformOpenAndEndRange(
     val labelPrefix =
         "On ${day.toParsableDate()} an invalid open-$label-entry was created '${timeRangeSpec.toParseableString()}': "
     val neighbour = if (isStartOpen) neighbours.first else neighbours.second ?: {
-        throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to EXIST!")
+        throw InvalidSheetException("$labelPrefix $labelNeighbour neighbour expected to EXIST!")
     }
     if (neighbour !is BuilderWorkDayEntry) {
-        throw BuilderException("$labelPrefix $labelNeighbour neighbour expected to be a WORK day!")
+        throw InvalidSheetException("$labelPrefix $labelNeighbour neighbour expected to be a WORK day!")
     }
     val requireType = if (isStartOpen) HasEndTime::class else HasStartTime::class
     if (!requireType.isInstance(neighbour.timeRangeSpec)) {
-        throw BuilderException("$labelPrefix $labelNeighbour neighbour expected $labelInversed TIME to be defined!")
+        throw InvalidSheetException("$labelPrefix $labelNeighbour neighbour expected $labelInversed TIME to be defined!")
     }
     return if (isStartOpen) {
         (timeRangeSpec as OpenStartRangeSpec).toTimeRange(start = (neighbour.timeRangeSpec as HasEndTime).end)

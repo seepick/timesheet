@@ -4,7 +4,7 @@ import com.github.seepick.timesheet.date.HasTimeRange
 import com.github.seepick.timesheet.date.Minutes
 import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.dsl.BuilderEntry
-import com.github.seepick.timesheet.dsl.BuilderException
+import com.github.seepick.timesheet.dsl.InvalidSheetException
 import com.github.seepick.timesheet.dsl.toRealEntry
 import com.github.seepick.timesheet.off.DayOffEntry
 import com.github.seepick.timesheet.tags.Tag
@@ -36,7 +36,7 @@ class TimeEntries(
                 entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
             }.flatten())
         } catch (e: InvalidTimeEntryException) {
-            throw BuilderException("Invalid timesheet defined: ${e.message}", e)
+            throw InvalidSheetException("Invalid timesheet defined: ${e.message}", e)
         }
     }
 
@@ -53,7 +53,7 @@ class InvalidTimeEntryException(message: String) : Exception(message)
 
 fun TimeEntries.Companion.byTimeEntries(entries: List<TimeEntry>): TimeEntries {
     if (entries.isEmpty()) {
-        throw InvalidTimeEntryException("Why you wanna try to build a timesheet without any entries? That has no sense, non-sense!")
+        throw InvalidTimeEntryException("Entries must not be empty!")
     }
     if (entries.first() !is WorkDayEntry) {
         throw InvalidTimeEntryException("First entry must be a working day but was: ${entries.first()}")

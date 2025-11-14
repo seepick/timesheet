@@ -1,5 +1,19 @@
+Todos
+=================================================================
+
+Next
+-----------------------------------------------------------------
+
+* report data has input param for FILTER(Entry -> Boolean)
+    * with this, can do a monthly/yearly/total report
+* based on those filtered entries, create an overview-report
+    * it has % per category
 * see task tags...
-* report percentage per category
+* github action (run tests, quality gates)
+
+Future
+-----------------------------------------------------------------
+
 * create (HTML? compose?) report
     - pie chart categories
     - per week/month/all skip through

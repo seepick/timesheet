@@ -45,14 +45,7 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     private val contractDslImpl: ContractDslImpl = ContractDslImpl(),
     private val current: Current = Current(),
     private val tagDslImpl: TagDslImpl<TAGS, OFFS> = TagDslImpl(context, current),
-) :
-    TimeSheetDsl,
-    YearDsl,
-    MonthDsl,
-    WorkDayDsl,
-    DayOffDsl,
-    ContractDsl by contractDslImpl,
-    TagDsl by tagDslImpl {
+) : TimeSheetDsl, YearDsl, MonthDsl, WorkDayDsl, DayOffDsl, ContractDsl by contractDslImpl, TagDsl by tagDslImpl {
 
     // MAIN TIMESHEET DSL
     // ================================================================================================
@@ -67,10 +60,14 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         code()
     }
 
+    override fun month(month: Int, code: MonthDsl.() -> Unit) {
+        month(Month.of(month), code)
+    }
+
     override fun day(day: Int, code: WorkDayDsl.() -> Unit) {
         val newDate = dateByCurrentSetYearAndMonth(day)
         if (current.entries.any { it.matches(newDate) }) {
-            throw BuilderException("Duplicate date entries: ${newDate.toParsableDate()}")
+            throw InvalidSheetException("Duplicate date entries: ${newDate.toParsableDate()}")
         }
         current.day = newDate
         code()
@@ -81,8 +78,7 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         day(day, code)
     }
 
-    private fun dateByCurrentSetYearAndMonth(day: Int) =
-        LocalDate.of(current.year, current.month, day)
+    private fun dateByCurrentSetYearAndMonth(day: Int) = LocalDate.of(current.year, current.month, day)
 
     private fun verifyDayLabel(dayLabel: Day, day: Int) {
         val currentDate = LocalDate.of(current.year, current.month, day)
@@ -97,8 +93,7 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     override fun contract(code: ContractDsl.() -> Unit) {
         code()
         current.contracts += DefinedWorkContract(
-            contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek),
-            definedAt = current.day
+            contract = WorkContract(daysOff = daysOff, hoursPerWeek = hoursPerWeek), definedAt = current.day
         )
     }
 
@@ -115,8 +110,7 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     // DAY OFF DSL
     // ================================================================================================
 
-    override fun dayOff(day: Int): DayOffDsl =
-        internalDayOff(dateByCurrentSetYearAndMonth(day))
+    override fun dayOff(day: Int): DayOffDsl = internalDayOff(dateByCurrentSetYearAndMonth(day))
 
     override fun dayOff(dayLabel: WorkDay, day: Int): DayOffDsl {
         verifyDayLabel(dayLabel, day)
@@ -149,15 +143,23 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
     // ================================================================================================
 
     fun build(): TimeSheet {
+        if (current.entries.isEmpty()) {
+            throw InvalidSheetException("Sheet requires at least one entry to be valid.")
+        }
         val timeEntries = TimeEntries.byBuilderEntries(current.entries)
         current.ensureAtLeastOneContract(timeEntries.firstDate)
-
+        val today = clock.currentLocalDate()
+        if (timeEntries.lastDate > today) {
+            throw InvalidSheetException("Entries (last date ${timeEntries.lastDate}) must not be in the future (today ${today})!")
+        }
         return TimeSheet(
             entries = timeEntries,
             contracts = transformContracts(
                 contracts = current.contracts,
-                sheetEndDate = clock.currentLocalDate(),
+                sheetEndDate = today,
             ),
         )
     }
 }
+
+class InvalidSheetException(message: String, cause: Exception? = null) : Exception(message, cause)

@@ -15,7 +15,11 @@ class TagDslImpl<TAGS : Tags, OFFS : OffReasons>(
     }
 
     override fun tags(tag1: Tag, vararg moreTags: Tag) {
-        addTags(listOf(tag1, *moreTags))
+        tags(listOf(tag1, *moreTags))
+    }
+
+    override fun tags(tags: List<Tag>) {
+        addTags(tags)
     }
 
     private fun addTags(allTags: List<Tag>) {

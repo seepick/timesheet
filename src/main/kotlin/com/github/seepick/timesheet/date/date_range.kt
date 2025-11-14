@@ -12,7 +12,7 @@ data class DateRange(
     val asClosedRange: ClosedRange<LocalDate> = startDate..endDate
 
     init {
-        require(startDate.isBeforeOrSame(endDate))
+        require(startDate.isBeforeOrSame(endDate)) { "Required start [$startDate] <= end [$endDate]" }
     }
 
     override fun iterator(): Iterator<LocalDate> =
