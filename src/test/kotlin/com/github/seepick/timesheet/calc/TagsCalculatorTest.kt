@@ -27,9 +27,8 @@ class TagsCalculatorTest : DescribeSpec({
         sheet: TimeSheetDsl.() -> Unit,
     ) = calculateTags(reportView, timesheetAny(today = today, entryCode = sheet))
 
-    describe("fo").config(enabled = false) {
+    describe("foobar").config(enabled = false) {
         it("ba") {
-
             val report = calc {
                 someWorkingDay(date = today) {
                     someWorkEntry2(timeRange, tags = listOf(someTag))

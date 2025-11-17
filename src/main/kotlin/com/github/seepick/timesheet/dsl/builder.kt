@@ -5,11 +5,7 @@ import com.github.seepick.timesheet.date.toParsableDate
 import com.github.seepick.timesheet.tags.Tag
 import java.time.LocalDate
 
-interface BuilderEntryFields {
-//    val day: LocalDate
-}
-
-interface BuilderEntry : BuilderEntryFields {
+interface BuilderEntry {
     fun matches(date: LocalDate): Boolean
 }
 

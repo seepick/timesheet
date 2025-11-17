@@ -15,7 +15,7 @@ import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.string
 import java.time.Month
 
-fun Arb.Companion.builderEntry() = when (int(1..3).next()) {
+fun Arb.Companion.builderEntry(): Arb<BuilderEntry> = when (int(1..3).next()) {
     1 -> builderWorkDayEntry()
     2 -> builderDayOffEntry()
     else -> builderDaysOffEntry()

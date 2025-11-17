@@ -3,9 +3,11 @@ package com.github.seepick.timesheet.date
 import com.github.seepick.timesheet.test_infra.parseDate
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
+import io.kotest.property.arbitrary.element
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.localTime
 import io.kotest.property.arbitrary.next
+import io.kotest.property.arbitrary.set
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -20,9 +22,12 @@ class StaticClock(private val date: LocalDate) : Clock {
 }
 
 fun Arb.Companion.workDays() = arbitrary {
-    val amount = int(min = 0, max = 3).next()
-    WorkDay.all.shuffled().take(amount).toSet()
+    set(workDay(), 0..3).next()
+//    val amount = int(min = 0, max = 3).next()
+//    WorkDay.all.shuffled().take(amount).toSet()
 }
+
+fun Arb.Companion.workDay() = element(WorkDay.all)
 
 fun Arb.Companion.timeRange() = arbitrary {
     val hour = int(min = 0, max = 22).next()

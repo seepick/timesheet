@@ -37,7 +37,7 @@ class TimeEntries(
                 entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
             }.flatten())
         } catch (e: InvalidTimeEntryException) {
-            throw InvalidSheetException("Invalid timesheet defined: ${e.message}", e)
+            throw InvalidSheetException("Timesheet contains invalid time entry!", e)
         }
     }
 

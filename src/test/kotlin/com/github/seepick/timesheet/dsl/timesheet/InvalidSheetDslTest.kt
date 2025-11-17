@@ -83,7 +83,7 @@ class InvalidSheetDslTest : DescribeSpec({
                     someWorkEntry(timeRange = someTimeRangeString)
                     someWorkEntry(timeRange = someTimeRangeString)
                 }
-            }.message shouldContain someDate.toParsableDate() // someTimeRangeString ... unfortunately this info is lost due to dynamic time construction and lack of validation info
+            }.cause.shouldNotBeNull().message shouldContain someDate.toParsableDate() // someTimeRangeString ... unfortunately this info is lost due to dynamic time construction and lack of validation info
         }
     }
 })

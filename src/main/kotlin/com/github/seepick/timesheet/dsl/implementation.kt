@@ -24,6 +24,8 @@ import com.github.seepick.timesheet.timesheet.TimeSheet
 import java.time.LocalDate
 import java.time.Month
 
+class InvalidEntriesException(message: String) : RuntimeException(message)
+
 class Current {
     var year = -1 // Int not possible to do lateinit :-/
     lateinit var month: Month
@@ -32,10 +34,27 @@ class Current {
     val entries = mutableListOf<BuilderEntry>()
     val contracts = mutableListOf<DefinedWorkContract>()
 
-    fun ensureAtLeastOneContract(firstDate: LocalDate) {
+    fun addDefaultContractIfEmpty(contractDefinedAt: LocalDate) {
         if (contracts.isEmpty()) {
-            contracts += DefinedWorkContract(WorkContract.default, firstDate)
+            contracts += DefinedWorkContract(WorkContract.default, contractDefinedAt)
         }
+    }
+
+    fun throwOnDuplicateDaysOffEntries() {
+        entries.map { entry ->
+            when (entry) {
+                is BuilderDayOffEntry -> listOf(entry.day to entry)
+                is BuilderDaysOffEntry -> entry.days.map { LocalDate.of(entry.year, entry.month, it) to entry }
+                is BuilderWorkDayEntry -> listOf(entry.day to entry)
+                else -> throw Exception("Unhandled BuilderEntry type: ${entry::class.qualifiedName}")
+            }
+        }.flatten().groupBy { it.first }
+            .filter { it.value.size >= 2 && !it.value.map { it.second }.all { it is BuilderWorkDayEntry } }
+            .also { duplicates ->
+                if (duplicates.isNotEmpty()) {
+                    throw InvalidEntriesException("Found duplicates: $duplicates")
+                }
+            }
     }
 }
 
@@ -146,8 +165,14 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
         if (current.entries.isEmpty()) {
             throw InvalidSheetException("Sheet requires at least one entry to be valid.")
         }
+        try {
+            current.throwOnDuplicateDaysOffEntries()
+        } catch (e: InvalidEntriesException) {
+            throw InvalidSheetException("Invalid entries found!", e)
+        }
         val timeEntries = TimeEntries.byBuilderEntries(current.entries)
-        current.ensureAtLeastOneContract(timeEntries.firstDate)
+        // TODO throwOnOverlappingWorkTimes
+        current.addDefaultContractIfEmpty(timeEntries.firstDate)
         val today = clock.currentLocalDate()
         if (timeEntries.lastDate > today) {
             throw InvalidSheetException("Entries (last date ${timeEntries.lastDate}) must not be in the future (today ${today})!")
