@@ -21,8 +21,7 @@ data class RangedWorkContract(
     /** considering only its entries (<=), not the actual clock date */
     val dateRange: DateRange,
 ) {
-    fun isWithin(date: LocalDate) =
-        dateRange.asClosedRange.contains(date)
+    fun isWithin(date: LocalDate) = dateRange.contains(date)
 }
 
 data class DefinedWorkContract(

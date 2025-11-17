@@ -1,6 +1,7 @@
 package com.github.seepick.timesheet.dsl.timesheet
 
 import com.github.seepick.timesheet.date.StaticClock
+import com.github.seepick.timesheet.date.TimeRange
 import com.github.seepick.timesheet.dsl.InvalidSheetException
 import com.github.seepick.timesheet.dsl.MonthDsl
 import com.github.seepick.timesheet.dsl.TimeSheetDsl
@@ -89,6 +90,14 @@ fun WorkDayDsl.someWorkEntry(
     tags: List<Tag> = emptyList(),
 ) {
     timeRange - about - tags
+}
+
+fun WorkDayDsl.someWorkEntry2(
+    timeRange: TimeRange = TestConstants.someTimeRange,
+    about: String = "some about",
+    tags: List<Tag> = emptyList(),
+) {
+    someWorkEntry(timeRange.formatted, about, tags)
 }
 
 fun MonthDsl.someDayOff(day: Int) {

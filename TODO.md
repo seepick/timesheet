@@ -4,10 +4,7 @@ Todos
 Next
 -----------------------------------------------------------------
 
-* report data has input param for FILTER(Entry -> Boolean)
-    * with this, can do a monthly/yearly/total report
-* based on those filtered entries, create an overview-report
-    * it has % per category
+* add koin for proper DI
 * see task tags...
 * github action (run tests, quality gates)
 

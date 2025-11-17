@@ -1,5 +1,6 @@
 package com.github.seepick.timesheet.tags
 
+import com.github.seepick.timesheet.test_infra.TestConstants
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.next
@@ -9,9 +10,11 @@ open class TestableTag(
     override val label: String
 ) : Tag
 
-object AnyTag : TestableTag("anyTag")
-object Tag1 : TestableTag("tag1")
-object Tag2 : TestableTag("tag2")
+data object AnyTag : TestableTag("anyTag")
+data object Tag1 : TestableTag("tag1")
+data object Tag2 : TestableTag("tag2")
+
+val TestConstants.tag1 get() = Tag1
 
 val Tag.Companion.any get() = AnyTag
 val Tag.Companion.tag1 get() = Tag1

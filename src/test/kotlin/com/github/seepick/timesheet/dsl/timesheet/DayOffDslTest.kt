@@ -69,9 +69,11 @@ class DayOffDslTest : DescribeSpec({
         }
     }
 
-    // TODO two day offs with same date
-    // TODO 1 work day 1 day off; same date
-    // TODO test 2 days off at same date
+    // TODO more tests for days off
+
+    // test: days off with same date
+    // test: 1 work day 1 day off; same date
+    // test: 2 days off at same date
 
 
 })
