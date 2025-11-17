@@ -1,5 +1,6 @@
 package com.github.seepick.timesheet.timesheet
 
+import com.github.seepick.timesheet.date.DateRange
 import com.github.seepick.timesheet.date.HasTimeRange
 import com.github.seepick.timesheet.date.Minutes
 import com.github.seepick.timesheet.date.toParsableDate
@@ -42,6 +43,7 @@ class TimeEntries(
 
     val firstDate: LocalDate = entries.first().day
     val lastDate: LocalDate = entries.last().day
+    val dateRange = DateRange(firstDate, lastDate)
     val workEntries = entries.filterIsInstance<WorkDayEntry>()
     val dayOffEntries = entries.filterIsInstance<DayOffEntry>()
 

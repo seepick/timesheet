@@ -3,7 +3,6 @@ package com.github.seepick.timesheet.calc
 import com.github.seepick.timesheet.date.DateRange
 import com.github.seepick.timesheet.date.MINUTES_IN_HOUR
 import com.github.seepick.timesheet.date.ReportView
-import com.github.seepick.timesheet.date.StaticClock
 import com.github.seepick.timesheet.date.WorkDay.wednesday
 import com.github.seepick.timesheet.date.june
 import com.github.seepick.timesheet.date.monthView
@@ -16,9 +15,14 @@ import com.github.seepick.timesheet.dsl.timesheet.someWorkEntry
 import com.github.seepick.timesheet.dsl.timesheet.someWorkingDay
 import com.github.seepick.timesheet.dsl.timesheet.timesheetAny
 import com.github.seepick.timesheet.report.TimeReportData
+import com.github.seepick.timesheet.report.calculate
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import java.time.Month
+import java.time.Year
+import java.time.YearMonth
 
 class ReportCalculatorTest : DescribeSpec({
 
@@ -33,9 +37,10 @@ class ReportCalculatorTest : DescribeSpec({
         reportView: ReportView = defaultReportView,
         sheet: TimeSheetDsl.() -> Unit
     ): TimeReportData =
-        ReportCalculator(StaticClock(today)).calculate(
+        ReportCalculator().calculate(
             sheet = timesheetAny(today = today.parseDate(), entryCode = sheet),
             reportView = reportView,
+            today = today.parseDate(),
         )
 
     describe("general") {
@@ -69,6 +74,42 @@ class ReportCalculatorTest : DescribeSpec({
             report.totalHoursToWork shouldBe 8.0
             report.totalHoursWorked shouldBe 6.0
             report.balanceInHours shouldBe -2.0
+        }
+
+        it("several views") {
+            val today = "1.2.$yearShort"
+
+            val reports = timesheetAny(today) {
+                year(year) {
+                    month(1) {
+                        day(1) {
+                            contract {
+                                hoursPerWeek = 5
+                            }
+                            "10-11" about "any"
+                        }
+                    }
+                }
+            }.calculate(today.parseDate()).reportDatas
+
+            reports.shouldHaveSize(3)
+            reports[0].reportView.shouldBeInstanceOf<ReportView.MonthReportView>()
+                .yearMonth shouldBe YearMonth.of(year, 1)
+            reports[0].totalHoursWorked shouldBe 1.0
+            reports[0].totalHoursToWork shouldBe 21.0
+            reports[0].balanceInHours shouldBe -20.0
+
+            reports[1].reportView.shouldBeInstanceOf<ReportView.MonthReportView>()
+                .yearMonth shouldBe YearMonth.of(year, 2)
+            reports[1].totalHoursWorked shouldBe 0.0
+            reports[1].totalHoursToWork shouldBe 1.0
+            reports[1].balanceInHours shouldBe -1.0
+
+            reports[2].reportView.shouldBeInstanceOf<ReportView.YearReportView>()
+                .year shouldBe Year.of(year)
+            reports[2].totalHoursWorked shouldBe 1.0
+            reports[2].totalHoursToWork shouldBe 22.0
+            reports[2].balanceInHours shouldBe -21.0
         }
 
         it("filter weekend") {
@@ -145,3 +186,4 @@ class ReportCalculatorTest : DescribeSpec({
         }
     }
 })
+

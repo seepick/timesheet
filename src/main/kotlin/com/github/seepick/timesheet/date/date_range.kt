@@ -9,7 +9,7 @@ data class DateRange(
     val endDate: LocalDate,
 ) : Iterable<LocalDate> {
 
-    constructor(dates: Pair<String, String>) : this(dates.first.parseDate(), dates.second.parseDate())
+    companion object {}
 
     private val asClosedRange: ClosedRange<LocalDate> = startDate..endDate
 
@@ -23,4 +23,16 @@ data class DateRange(
         List(ChronoUnit.DAYS.between(startDate, endDate).toInt() + 1) { i ->
             startDate.plusDays(i.toLong())
         }.iterator()
+
+    fun limitedBy(other: DateRange) =
+        DateRange(
+            startDate = if (other.startDate > startDate) other.startDate else startDate,
+            endDate = if (other.endDate < endDate) other.endDate else endDate,
+        )
+
+    fun limitedEndBy(other: LocalDate) = DateRange(
+        startDate = startDate,
+        endDate = if (other < endDate) other else endDate,
+    )
+
 }

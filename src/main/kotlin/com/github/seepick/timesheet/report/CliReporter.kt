@@ -1,27 +1,32 @@
 package com.github.seepick.timesheet.report
 
 import com.github.seepick.timesheet.date.DateRange
+import com.github.seepick.timesheet.date.ReportView
 import com.github.seepick.timesheet.date.format
 import java.lang.Math.abs
 import java.text.DecimalFormat
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 class CliReporter : Reporter {
 
     private val hoursFormatter = DecimalFormat("##.#")
 
-    override fun report(context: ReportContext) {
+    override fun report(context: ReportContext, today: LocalDate) {
         context.reportDatas.forEach {
-            reportReport(it)
+            reportReport(it, today)
         }
     }
 
-    private fun reportReport(data: TimeReportData) {
-        val title = when (data.reportView.rangeType) {
-            ReportRangeType.Total -> "Total"
-            ReportRangeType.Yearly -> "Yearly"
-            ReportRangeType.Monthly -> "Monthly"
+    private fun reportReport(data: TimeReportData, today: LocalDate) {
+        val title = when (data.reportView) {
+            is ReportView.TotalReportView -> "Total"
+            is ReportView.YearReportView -> data.reportView.year.toString()
+            is ReportView.MonthReportView ->
+                data.reportView.yearMonth.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
         }
-        println("$title Report (${data.reportView.dateRange.format()}):")
+        println("$title Report (${data.reportView.dateRange.limitedEndBy(today).format()}):")
         println(generateHoursBalanceString(data))
         println()
     }

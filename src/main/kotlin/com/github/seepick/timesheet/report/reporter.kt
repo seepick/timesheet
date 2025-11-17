@@ -28,13 +28,13 @@ fun TimeSheet.calculate(today: LocalDate = SystemClock.currentLocalDate()): Repo
     return ReportContext(
         sheet = this,
         reportDatas = reportViews.map {
-            calculator.calculate(this, it)
+            calculator.calculate(this, it, today)
         }
     )
 }
 
 interface Reporter {
-    fun report(context: ReportContext)
+    fun report(context: ReportContext, today: LocalDate = SystemClock.currentLocalDate())
 }
 
 enum class ReportRangeType {
