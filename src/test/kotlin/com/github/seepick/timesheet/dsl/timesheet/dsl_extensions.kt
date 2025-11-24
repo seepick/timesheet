@@ -11,23 +11,25 @@ import com.github.seepick.timesheet.off.OffReason
 import com.github.seepick.timesheet.off.OffReasons
 import com.github.seepick.timesheet.off.any
 import com.github.seepick.timesheet.tags.Tag
-import com.github.seepick.timesheet.tags.Tags
-import com.github.seepick.timesheet.tags.any
+import com.github.seepick.timesheet.tags.tags
 import com.github.seepick.timesheet.test_infra.TestConstants
 import com.github.seepick.timesheet.timesheet.TimeSheet
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.next
 import java.time.LocalDate
 import java.time.Month
 
 private val anyYear = 2000
 private val anyMonth = Month.JANUARY
+private val anyTags = Arb.tags().next()
 
 fun timesheetAny(today: String, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
-    timesheet(Tags.any, OffReasons.any, StaticClock(today), entryCode)
+    timesheet(anyTags, OffReasons.any, StaticClock(today), entryCode)
 
 fun timesheetAny(today: LocalDate, entryCode: TimeSheetDsl.() -> Unit): TimeSheet =
-    timesheet(Tags.any, OffReasons.any, StaticClock(today), entryCode)
+    timesheet(anyTags, OffReasons.any, StaticClock(today), entryCode)
 
 fun failingTimesheet(today: LocalDate, dsl: TimeSheetDsl.() -> Unit): InvalidSheetException =
     shouldThrow {
@@ -92,7 +94,7 @@ fun WorkDayDsl.someWorkEntry(
     timeRange - about - tags
 }
 
-fun WorkDayDsl.someWorkEntry2(
+fun WorkDayDsl.someWorkEntryBySpec(
     timeRange: TimeRange = TestConstants.someTimeRange,
     about: String = "some about",
     tags: List<Tag> = emptyList(),

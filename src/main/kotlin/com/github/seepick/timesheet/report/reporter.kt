@@ -61,9 +61,14 @@ sealed interface ReportRange {
 data class TagsReport(
     val minutesPerTag: Map<Tag, Minutes>
 ) {
+    /** 42% => 0.42 */
+    val percentagesPerTag: Map<Tag, Double>
+
     init {
-        // FIXME tags calc percentages Map<Tag, Int>
-        // percentagesPerTag
+        val totalMinutes = minutesPerTag.map { it.value }.sum()
+        percentagesPerTag = minutesPerTag.map {
+            it.key to (it.value.toDouble() / totalMinutes)
+        }.toMap()
     }
 }
 

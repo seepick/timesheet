@@ -27,7 +27,7 @@ data class TimeRange(
         TIME_FORMAT.format(start) + "-" + TIME_FORMAT.format(end)
     }
 
-    val duration: Minutes = ChronoUnit.MINUTES.between(start, end)
+    val durationInMin: Minutes = ChronoUnit.MINUTES.between(start, end)
     private val parseableString = "${start.toParseableString()}-${end.toParseableString()}"
 
     fun toParseableString() = parseableString

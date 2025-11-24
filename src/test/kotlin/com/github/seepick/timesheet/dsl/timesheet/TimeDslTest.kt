@@ -52,6 +52,5 @@ class TimeDslTest : DescribeSpec({
             exception.message shouldContain "1:00"
             exception.message shouldContain someDateString
         }
-        // TODO test overlaps
     }
 })

@@ -11,10 +11,11 @@ Next
 Future
 -----------------------------------------------------------------
 
-* create (HTML? compose?) report
-    - pie chart categories
-    - per week/month/all skip through
-    - list of all entries (details, description)
+* create (HTML? compose?) report; gradle sub-project
+    * https://kotlinlang.org/docs/lets-plot.html
+    * pie chart categories
+    * per week/month/all skip through
+    * list of all entries (details, description)
 
 * enable "*-" time notation
 

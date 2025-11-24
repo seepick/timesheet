@@ -171,7 +171,10 @@ class DslImplementation<TAGS : Tags, OFFS : OffReasons>(
             throw InvalidSheetException("Invalid entries found!", e)
         }
         val timeEntries = TimeEntries.byBuilderEntries(current.entries)
-        // TODO throwOnOverlappingWorkTimes
+        // TODO throwOnOverlappingWorkTimes;
+        // filter WorkDayEntry only; group by day
+        // ensure order: if not all ordered asc, then fail
+        // validate by checking no overlap (== is ok, but not left's start > right's start)
         current.addDefaultContractIfEmpty(timeEntries.firstDate)
         val today = clock.currentLocalDate()
         if (timeEntries.lastDate > today) {

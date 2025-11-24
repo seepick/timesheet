@@ -1,8 +1,7 @@
 package com.github.seepick.timesheet.dsl.timesheet
 
 import com.github.seepick.timesheet.date.timeRange
-import com.github.seepick.timesheet.tags.Tag
-import com.github.seepick.timesheet.tags.any
+import com.github.seepick.timesheet.tags.tag
 import com.github.seepick.timesheet.test_infra.TestConstants
 import com.github.seepick.timesheet.test_infra.parseDate
 import com.github.seepick.timesheet.timesheet.EntryDateRange
@@ -22,7 +21,7 @@ class DslTest : DescribeSpec({
     val timeRange1 = TestConstants.timeRange1
     val timeRange2 = TestConstants.timeRange2
     val description = "test description"
-    val someTag = Tag.any
+    val someTag = Arb.tag().next()
 
     describe("When sunshine case") {
         it("two valid working days Then two entries returned") {

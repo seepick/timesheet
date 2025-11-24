@@ -32,7 +32,7 @@ class TimeEntries(
 ) : List<TimeEntry> by entries {
 
     companion object {
-        fun byBuilderEntries(entries: List<BuilderEntry>) = try {
+        fun byBuilderEntries(entries: List<BuilderEntry>): TimeEntries = try {
             byTimeEntries(entries.mapIndexed { i, entry ->
                 entry.toRealEntry(neighbours = entries.getOrNull(i - 1) to entries.getOrNull(i + 1))
             }.flatten())

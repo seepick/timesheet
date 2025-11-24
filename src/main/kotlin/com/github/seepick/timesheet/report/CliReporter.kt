@@ -8,6 +8,7 @@ import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class CliReporter : Reporter {
 
@@ -23,14 +24,18 @@ class CliReporter : Reporter {
         val title = when (data.reportView) {
             is ReportView.TotalReportView -> "Total"
             is ReportView.YearReportView -> data.reportView.year.toString()
-            is ReportView.MonthReportView ->
-                data.reportView.yearMonth.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+            is ReportView.MonthReportView -> data.reportView.yearMonth.month.getDisplayName(
+                TextStyle.FULL,
+                Locale.ENGLISH
+            )
         }
         println("$title Report (${data.reportView.dateRange.limitedEndBy(today).format()}):")
+        println(data.tagsReport.format())
         println(generateHoursBalanceString(data))
         println()
     }
 
+    // TODO use emojis... highlight report "-----------" thingy
     private fun generateHoursBalanceString(data: TimeReportData): String {
         val pluralS = if (data.balanceInHours == 1.0) "" else "s"
         return when (data.balanceState) {
@@ -51,9 +56,15 @@ class CliReporter : Reporter {
 
 }
 
-private fun DateRange.format(): String {
-    return "${startDate.format()} to ${endDate.format()}"
-}
+// TODO use colors for tags; calc hash -> color code (stable colors for stable string!)
+private fun TagsReport.format(): String =
+    "Tags: " + percentagesPerTag
+        .toSortedMap { o1, o2 -> o1.label.compareTo(o2.label) } // or sort by values?!
+        .mapValues { (it.value * 100).roundToInt() }
+        .map { "${it.key.label}=${it.value}%" }
+        .joinToString()
+
+private fun DateRange.format() = "${startDate.format()} to ${endDate.format()}"
 
 private fun BalanceState.wrap(message: String) = "$wrapColor$message${PrintSymbols.ANSI_RESET}"
 

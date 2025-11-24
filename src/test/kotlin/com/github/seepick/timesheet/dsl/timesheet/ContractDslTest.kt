@@ -4,12 +4,13 @@ import com.github.seepick.timesheet.contract.WorkContract
 import com.github.seepick.timesheet.date.DateRange
 import com.github.seepick.timesheet.date.WorkDay.friday
 import com.github.seepick.timesheet.date.WorkDay.monday
-import com.github.seepick.timesheet.tags.Tag
-import com.github.seepick.timesheet.tags.any
+import com.github.seepick.timesheet.tags.tag
 import com.github.seepick.timesheet.test_infra.TestConstants.someDate
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.next
 import java.time.LocalDate
 import java.time.Month.SEPTEMBER
 
@@ -49,7 +50,7 @@ class ContractDslTest : DescribeSpec({
                                 hoursPerWeek = 10
                                 daysOff = setOf(monday)
                             }
-                            "9-10" - "x" - Tag.any
+                            "9-10" - "x" - Arb.tag().next()
                         }
                     }
                 }

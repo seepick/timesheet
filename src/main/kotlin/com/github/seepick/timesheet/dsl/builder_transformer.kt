@@ -34,12 +34,12 @@ fun BuilderEntry.toRealEntry(neighbours: Pair<BuilderEntry?, BuilderEntry?>): Li
         is BuilderDayOffEntry -> listOf(
             DayOffEntry(
                 day = day,
-                reason = reason ?: throw InvalidSheetException("no day off reason was given for: $this")
+                reason = reason ?: throw InvalidSheetException("No day off reason was given for: $this")
             )
         )
 
         is BuilderDaysOffEntry -> {
-            val nonNullReason = reason ?: throw InvalidSheetException("no day off reason was given for: $this")
+            val nonNullReason = reason ?: throw InvalidSheetException("No day off reason was given for: $this")
             this.dates.map {
                 DayOffEntry(day = it, reason = nonNullReason)
             }

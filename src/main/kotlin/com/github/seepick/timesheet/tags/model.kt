@@ -6,7 +6,7 @@ interface Tag {
     companion object;
 }
 
-class NamedTag(
+data class NamedTag(
     override val label: String
 ) : Tag
 

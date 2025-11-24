@@ -24,5 +24,5 @@ data class EntryDateRange(
     val day: LocalDate,
     override val timeRange: TimeRange,
 ) : HasTimeRange {
-    val duration: Minutes = timeRange.duration
+    val duration: Minutes = timeRange.durationInMin
 }

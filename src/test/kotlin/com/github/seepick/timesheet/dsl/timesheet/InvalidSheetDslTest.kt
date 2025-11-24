@@ -40,15 +40,15 @@ class InvalidSheetDslTest : DescribeSpec({
             }.message.shouldNotBeNull().shouldContain("at least one entry")
         }
     }
-    // TODO test exception messages
     describe("When ... invalid Then fail") {
         it("no days") {
             failingTimesheet(anyDate) {}
+                .message.shouldNotBeNull() shouldContain "requires at least one entry"
         }
         it("starts with day-off day") {
             failingTimesheet(someDate) {
                 someDayOff(someDate)
-            }
+            }.cause.shouldNotBeNull().message.shouldNotBeNull().shouldContain("First entry must be a working day")
         }
         it("Given some work day When day-off without reason entry") {
             val date = "13.11.25".parseDate() // thursday
@@ -59,7 +59,7 @@ class InvalidSheetDslTest : DescribeSpec({
                         dayOff(13) // missing: becauseOf reason
                     }
                 }
-            }
+            }.message.shouldNotBeNull().shouldContain("No day off reason was given")
         }
         it("two work days with same date") {
             val conflictingDate = someDate
