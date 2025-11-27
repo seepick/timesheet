@@ -8,4 +8,5 @@ interface ContractDsl {
     var hoursPerWeek: Int
     var dayOff: WorkDay
     var daysOff: Set<WorkDay>
+    fun noDaysOff()
 }

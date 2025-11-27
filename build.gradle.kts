@@ -7,7 +7,7 @@ repositories {
 //            load(gradleProp.reader())
 //        }["uwv.azure_token"]?.toString()
 //    } else null
-    val azureToken = System.getProperty("azureToken")
+    val azureToken = System.getenv("azureToken")
     if (azureToken != null) {
         println("Using UWV repo.")
         maven {

@@ -14,4 +14,7 @@ class ContractDslImpl : ContractDsl {
 
     override var daysOff: Set<WorkDay> = WorkContract.default.daysOff
 
+    override fun noDaysOff() {
+        daysOff = emptySet()
+    }
 }
